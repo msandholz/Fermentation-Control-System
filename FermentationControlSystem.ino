@@ -19,8 +19,8 @@ boolean CONFIG_MODE = false;
 boolean SHOW_COOL_DOWN = false;
 boolean SHOW_HEAT_UP = false;
 int COOL_HEAT = 10;
-const char* SSID = "WLAN";                      // Enter SSID here
-const char* WLAN_PW = "74696325262072177928";   // Enter Password here
+const char* SSID = "-SSID-";                      // Enter SSID here
+const char* WLAN_PW = "-PW-";   // Enter Password here
 String HOSTNAME = "ESP-Fermentation";           // Enter Hostname here
 const int TEMP = 2;                             // GPIO for OneWire-Bus
 int CURR_TEMP = 0;
@@ -33,7 +33,7 @@ unsigned long lastMillis = 0;
 int b = 0;
 
 // Initialize MQTT Publisher
-const char* MQTT_SERVER = "192.168.178.71";     // Enter MQTT Broker here
+const char* MQTT_SERVER = "-IP-of-MQTT-Server-";     // Enter MQTT Broker here
 StaticJsonDocument<256> doc;
 char json_msg[128];
 
