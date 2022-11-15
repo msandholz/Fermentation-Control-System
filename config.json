@@ -1,0 +1,11 @@
+{
+  "Hostname":"John",
+  "WiFi-SSID":"WLAN",
+  "WiFi-PW":"xyz",
+  "MQTT-IP":"",
+  "Target-Temp":10, 
+  "Hysteresis":1,
+  "POWER_HEAT":120,
+  "POWER_COOL":240,
+  "POWER_IDLE":10
+}
