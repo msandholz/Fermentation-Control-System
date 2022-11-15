@@ -1,28 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Font Awesome Icons</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<title>Font Awesome 5 Icons</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
+<!--Get your own code at fontawesome.com-->
 </head>
 <body>
 
-<h1>fa fa-snowflake-o</h1>
-
-<i class="fa fa-snowflake-o"></i>
-<i class="fa fa-snowflake-o" style="font-size:24px"></i>
-<i class="fa fa-snowflake-o" style="font-size:36px;color:blue"></i>
-<i class="fa fa-snowflake-o" style="font-size:48px;color:blue"></i>
+<h1>far fa-lightbulb</h1>
+<i class='far fa-lightbulb'></i>
+<i class='far fa-lightbulb' style='font-size:24px'></i>
+<i class='far fa-lightbulb' style='font-size:36px;color:orange'></i>
+<i class='far fa-lightbulb' style='font-size:48px;color:orange'></i>
 <br>
 
-<h1>fa fa-lightbulb-o</h1>
-
-<i class="fa fa-lightbulb-o"></i>
-<i class="fa fa-lightbulb-o" style="font-size:24px"></i>
-<i class="fa fa-lightbulb-o" style="font-size:36px;color:orange"></i>
-<i class="fa fa-lightbulb-o" style="font-size:48px;color:orange"></i>
+<h1>fa fa-fire</h1>
+<i class="fa fa-fire"></i>
+<i class="fa fa-fire" style="font-size:24px"></i>
+<i class="fa fa-fire" style="font-size:36px"></i>
+<i class="fa fa-fire" style="font-size:48px;color:red"></i>
 <br>
 
+<h1>fas fa-snowflake</h1>
+<i class='fas fa-snowflake'></i>
+<i class='fas fa-snowflake' style='font-size:24px'></i>
+<i class='fas fa-snowflake' style='font-size:36px;color:blue'></i>
+<i class='fas fa-snowflake' style='font-size:48px;color:blue'></i>
+<br>
+
+<h1>fa fa-home</h1>
+<i class="fa fa-home"></i>
+<i class="fa fa-home" style="font-size:24px"></i>
+<i class="fa fa-home" style="font-size:36px"></i>
+<i class="fa fa-home" style="font-size:48px;color:red"></i>
+<br>
+
+<h1>fa fa-save</h1>
+<i class="fa fa-save"></i>
+<i class="fa fa-save" style="font-size:24px"></i>
+<i class="fa fa-save" style="font-size:36px;"></i>
+<i class="fa fa-save" style="font-size:48px;color:red"></i>
+<br>
+
+<h1>fa fa-upload</h1>
+<i class="fa fa-upload"></i>
+<i class="fa fa-upload" style="font-size:24px"></i>
+<i class="fa fa-upload" style="font-size:36px"></i>
+<i class="fa fa-upload" style="font-size:48px;color:red"></i>
+<br>
+
+<h1>fa fa-align-justify</h1>
+<i class="fa fa-align-justify"></i>
+<i class="fa fa-align-justify" style="font-size:24px"></i>
+<i class="fa fa-align-justify" style="font-size:36px;"></i>
+<i class="fa fa-align-justify" style="font-size:48px;color:red"></i>
+<br>
 
 </body>
-</html> 
+</html>
