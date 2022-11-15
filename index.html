@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>CSS Website Layout</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 10px;
+  background-color: #f1f1f1;
+}
+
+
+/* Style the top navigation bar #333*/
+.topnav {
+  overflow: hidden;
+  background-color: #04aa6d;
+}
+
+/* Style the topnav links */
+.topnav a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+/* Change color on hover */ 
+.topnav a:hover {
+  background-color: #ddd;
+  color: grey;
+}
+
+/* Create three equal columns that floats next to each other */
+.row {
+  float: left;
+  width: 100%;
+  min-height: 400px;
+  padding: 15px;
+  background-color: #fff;
+}
+
+.footer {
+  float: left;
+  width: 100%;
+  background-color: #ddd;
+  padding: 5px;
+  text-align: center;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media screen and (max-width:600px) {
+  .column {
+    width: 100%;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a href="/"><i class="fa fa-home" style="font-size:36px"></i></a>
+  <a href="/config"><i class="fa fa-save" style="font-size:36px;"></i></a>
+  <a href="/update"><i class="fa fa-upload" style="font-size:36px"></i></a>
+  <a href="/test"><i class="fa fa-align-justify" style="font-size:36px"></i></a>
+</div>
+
+
+<div class="row">
+    <h2>Column</h2>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+</div>
+
+<div class="footer">
+  <p>Footer</p>
+</div>
+
+</body>
+</html>
+
