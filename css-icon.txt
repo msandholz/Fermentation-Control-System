@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Font Awesome Icons</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+
+<h1>fa fa-snowflake-o</h1>
+
+<i class="fa fa-snowflake-o"></i>
+<i class="fa fa-snowflake-o" style="font-size:24px"></i>
+<i class="fa fa-snowflake-o" style="font-size:36px;color:blue"></i>
+<i class="fa fa-snowflake-o" style="font-size:48px;color:blue"></i>
+<br>
+
+<h1>fa fa-lightbulb-o</h1>
+
+<i class="fa fa-lightbulb-o"></i>
+<i class="fa fa-lightbulb-o" style="font-size:24px"></i>
+<i class="fa fa-lightbulb-o" style="font-size:36px;color:orange"></i>
+<i class="fa fa-lightbulb-o" style="font-size:48px;color:orange"></i>
+<br>
+
+
+</body>
+</html> 
