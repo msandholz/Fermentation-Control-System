@@ -16,8 +16,12 @@ body {
 }
 
 .center {
-  align-items: center;
-  border: 1px solid blue;
+  align: center;
+  width: 80%;
+}
+
+.right {
+	text-align: right;
 }
 
 /* Style the top navigation bar #333*/
@@ -143,37 +147,42 @@ input:checked + .slider:before {
 
 <div class="row">
   <h2>Configuration Center</h2>
-    <div class="center">
-    	<h3>Communication settings:</h3>
-    	
-        <form action="/get">
-  			Hostname: <input type="text" name="input1">
-  			<input type="submit" value="Submit">
-		</form><br>
-		<form action="/get">
-  			WiFi-SSID: <input type="text" name="input2">
-  			<input type="submit" value="Submit">
-		</form><br>
-		<form action="/get">
-  			WiFi-PW: <input type="text" name="input3">
-  			<input type="submit" value="Submit">
-		</form><br>
-    	<form action="/get">
-  			MQTT-Broker: <input type="text" name="input3">
-  			<input type="submit" value="Submit">
-		</form>
-    </div>
-    <br>
-    <div class="center">
-    	<h3>Fermentation settings:</h3>
+    <div><center>
+      <table class="center">
+       <form action="/get">
+       <tr>
+        <td class="right">Hostname:</td>
+        <td><input type="text" name="hostname"></td>
+	   </tr>
+       <tr>
+        <td class="right">WiFi-SSID:</td>
+        <td><input type="text" name="wlan-ssid"></td>
+	   </tr>
+       <tr>
+        <td class="right">WiFi-PW:</td>
+        <td><input type="password" name="wlan-pw"></td>
+	   </tr>
+       <tr>
+        <td class="right">MQTT-Boker:</td>
+        <td><input type="text" name="mqt-broker"></td>
+	   </tr>
+       <tr>
+        <td class="right">Hysteresis:</td>
+        <td><input type="number" name="hysteresis"></td>
+	   </tr>
+       <tr>
+        <td class="right">Target-Temp:</td>
+        <td><input type="number" name="target-temp"></td>
+	   </tr>
+       <tr>
+        <td></td>
+  		<td><input type="submit" value="Submit"></td>
+       </tr>
+	  </form>
+</table></center><br>
+    
 
-        <form action="/get">
-  			Hysteresis: <input type="text" name="input1"><br>
-        	Target Temp: <input type="text" name="input2"><br>
-  		<input type="submit" value="Submit">
-		</form>
-      </div>
  </div>
-	 <div class="footer"> Version 1.0</div>
+ <div class="footer"> Version 1.0</div>
  </body>
 </html>
