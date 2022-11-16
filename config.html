@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>CSS Website Layout</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 10px;
+  background-color: #f1f1f1;
+}
+
+.center {
+  align-items: center;
+  border: 1px solid blue;
+}
+
+/* Style the top navigation bar #333*/
+.topnav {
+  overflow: hidden;
+  background-color: #04aa6d;
+}
+
+/* Style the topnav links */
+.topnav a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+/* Change color on hover */ 
+.topnav a:hover {
+  background-color: #ddd;
+  color: grey;
+}
+
+/* Create three equal columns that floats next to each other */
+.row {
+  float: left;
+  width: 100%;
+  min-height: 400px;
+  padding: 15px;
+  background-color: #fff;
+}
+
+.footer {
+  float: left;
+  width: 100%;
+  background-color: #ddd;
+  padding: 5px;
+  text-align: center;
+}
+
+.row {
+  text-align: center;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media screen and (max-width:600px) {
+  .column {
+    width: 100%;
+  }
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a href="/"><i class="fa fa-home" style="font-size:36px"></i></a>
+  <a href="/config"><i class="fa fa-save" style="font-size:36px;"></i></a>
+  <a href="/update"><i class="fa fa-upload" style="font-size:36px"></i></a>
+  <a href="/test"><i class="fa fa-align-justify" style="font-size:36px"></i></a>
+</div>
+
+
+<div class="row">
+  <h2>Configuration Center</h2>
+    <div class="center">
+    	<h3>Communication settings:</h3>
+    	
+        <form action="/get">
+  			Hostname: <input type="text" name="input1">
+  			<input type="submit" value="Submit">
+		</form><br>
+		<form action="/get">
+  			WiFi-SSID: <input type="text" name="input2">
+  			<input type="submit" value="Submit">
+		</form><br>
+		<form action="/get">
+  			WiFi-PW: <input type="text" name="input3">
+  			<input type="submit" value="Submit">
+		</form><br>
+    	<form action="/get">
+  			MQTT-Broker: <input type="text" name="input3">
+  			<input type="submit" value="Submit">
+		</form>
+    </div>
+    <br>
+    <div class="center">
+    	<h3>Fermentation settings:</h3>
+
+        <form action="/get">
+  			Hysteresis: <input type="text" name="input1"><br>
+        	Target Temp: <input type="text" name="input2"><br>
+  		<input type="submit" value="Submit">
+		</form>
+      </div>
+ </div>
+ </body>
+</html>
