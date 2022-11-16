@@ -20,6 +20,10 @@ body {
   border: 1px solid blue;
 }
 
+.right {
+	text-align: right;
+}
+
 /* Style the top navigation bar #333*/
 .topnav {
   overflow: hidden;
@@ -140,19 +144,35 @@ input:checked + .slider:before {
   <a href="/test"><i class="fa fa-align-justify" style="font-size:36px"></i></a>
 </div>
 
-
 <div class="row">
     <h2>Fermentation Control Center</h2>
-    <div class="center"><p>Control:
-    	<label class="switch">
+    <center>
+      <table>
+       <tr>
+        <td class="right">Control:</td>
+        <td><label class="switch">
   			<input type="checkbox" checked>
   			<span class="slider round"></span>
-		</label>
-    </p>
+		</label></td>
+	   </tr>
+       <tr>
+        <td class="right">Power Consumption:</td>
+        <td>100 Watt</td>
+	   </tr>
+       <tr>
+        <td class="right">Room Temp:</td>
+        <td>15 &#x2103;</td>
+	   </tr>
+       <tr>
+        <td class="right">Target Temp:</td>
+        <td>20 &#x2103;</td>
+	   </tr>
+       <tr>
+        <td class="right">Current Temp:</td>
+        <td>21 &#x2103;<i class='fas fa-snowflake' style='font-size:24px;color:blue'></i><i class="fa fa-fire" style="font-size:24px;color:orange"></i></td>
+	   </tr>
+		</table></center><br>
     </div>
-    <p>Status: <i class='fas fa-snowflake' style='font-size:24px;color:blue'></i><i class="fa fa-fire" style="font-size:24px;color:orange"></i></p>
-    <p>Power Consumption: 100 Watt</p>
-    <p>Room Temp: 15 &#x2103;</p>
-    <p>Target Temp: 20 &#x2103;</p>
-    <p>Current Temp: 21 &#x2103;<i class='fas fa-snowflake' style='font-size:24px;color:blue'></i><i class="fa fa-fire" style="font-size:24px;color:orange"></i></p>
-</div>
+ 	<div class="footer"> Version 1.0</div>
+ </body>
+</html>
