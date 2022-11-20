@@ -1,11 +1,9 @@
 {
-  "Hostname":"John",
-  "WiFi-SSID":"WLAN",
-  "WiFi-PW":"xyz",
-  "MQTT-IP":"",
-  "Target-Temp":10, 
-  "Hysteresis":1,
-  "POWER_HEAT":120,
-  "POWER_COOL":240,
-  "POWER_IDLE":10
-}
+    "HOSTNAME":"ESP-Fermentation",
+    "MQTT_BROKER":"192.168.178.12",
+    "TARGET_TEMP":10, 
+    "TEMP_HYSTERESIS":1,
+    "POWER_HEAT":35,
+    "POWER_COOL":70,
+    "POWER_IDLE":7
+  }
