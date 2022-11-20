@@ -22,8 +22,8 @@
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
 
-#define ROTARY_CLK 25           // GPIO for rotary encoder clock
-#define ROTARY_DT 32            // GPIO for rotary encoder dt
+#define ROTARY_CLK 32           // GPIO for rotary encoder clock
+#define ROTARY_DT 25            // GPIO for rotary encoder dt
 #define ROTARY_BUTTON 27        // GPIO for rotary encoder button
 
 #define COOL_DOWN 4             // GPIO for cooling down Relais
@@ -33,6 +33,10 @@
 #define OFF true 
 
 #define TEMP 5                  // GPIO for OneWire-Bus
+
+#define ROTARYSTEPS 2
+#define ROTARYMIN 5
+#define ROTARYMAX 25
 
 // ======================================================================
 // Setting parameters with default values
@@ -88,6 +92,9 @@ char json_msg[128];
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
+// Initialize Rotary Encoder
+RotaryEncoder encoder(ROTARY_CLK, ROTARY_DT, RotaryEncoder::LatchMode::TWO03);
+int lastPos = -1;
 
 // ======================================================================
 // Functions
@@ -377,8 +384,8 @@ void initRelayBoard() {
   
 void initRotaryEncoder() {
   // Setup ESP Rotary Encoder
-  pinMode (ROTARY_CLK, INPUT_PULLUP);
-  pinMode (ROTARY_DT, INPUT_PULLUP);
+  //pinMode (ROTARY_CLK, INPUT_PULLUP);
+  //pinMode (ROTARY_DT, INPUT_PULLUP);
   pinMode (ROTARY_BUTTON, INPUT_PULLUP);
 
   if(DEBUG_SERIAL) {Serial.println("RotaryEncoder started!");}
@@ -501,6 +508,7 @@ void loop() {
     if (lastButtonState == HIGH && currentButtonState == LOW) {     // button is pressed
         if(CONFIG_MODE) { saveConfig(); }   
         CONFIG_MODE = !CONFIG_MODE;
+        encoder.setPosition(TARGET_TEMP / ROTARYSTEPS);             // start with the value of TARGET_TEMP.
     }
     lastButtonState = currentButtonState;                            // save the the last state
 
@@ -541,17 +549,20 @@ void loop() {
 
     if(CONFIG_MODE) {
 
-        currentCLKState = digitalRead(ROTARY_CLK);                  // Reads the "current" state of the ROTARY_CLK
-        if(currentCLKState != lastCLKState) {
-                // If the outputB state is different to the outputA state, that means the encoder is rotating clockwise
-            if (digitalRead(ROTARY_DT) != currentCLKState) { 
-                if (TARGET_TEMP > 4) { TARGET_TEMP--; }
-            } else {
-                if (TARGET_TEMP < 25) { TARGET_TEMP++; }
-            }
+        encoder.tick();
+
+        int newPos = encoder.getPosition() * ROTARYSTEPS;
+
+        if (newPos < ROTARYMIN) {
+            encoder.setPosition(ROTARYMIN / ROTARYSTEPS);
+            newPos = ROTARYMIN;
+        } else if (newPos > ROTARYMAX) {
+            encoder.setPosition(ROTARYMAX / ROTARYSTEPS);
+            newPos = ROTARYMAX;
         }
-        lastCLKState = currentCLKState; // Updates the previous state of the outputA with the current state
-        
+
+        TARGET_TEMP = newPos;
+     
         // Show Config mode on OLED
         display.clearDisplay();
         display.setFont(&FreeMonoBold12pt7b);
