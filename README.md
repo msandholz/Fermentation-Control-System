@@ -1,6 +1,5 @@
 # Fermentation-Control-System
 
-## ToDO: Next Release (1.1):
-- Add Release Information on top of the code
-- Send Float-Values of Bottom Temp via JSON to InfluxDB
-- Check cool_heat Status
+## ToDo: Next Release (0.6):
+- calculate align position of current temperature (18pt) : int offset = ((120 - ((CURR_TEMP_F.length()+1)*18))/2);
+
