@@ -41,8 +41,8 @@
 // Setting parameters with default values
 // ======================================================================
 
-const char* WIFI_SSID = "---";                      // WLAN-SSID
-const char* WIFI_PW = "---";        // WLAN-Password
+const char* WIFI_SSID = "WLAN";                      // WLAN-SSID
+const char* WIFI_PW = "74696325262072177928";        // WLAN-Password
 String HOSTNAME = "ESP-32";                          // Enter Hostname here
 String MQTT_BROKER = "192.168.178.120";              // MQTT-Broker
 
@@ -556,6 +556,16 @@ void loop() {
 
             saveConfig();
             lastPos = newPos;
+        }
+
+        if (CURR_TEMP < TARGET_TEMP) {
+            digitalWrite(COOL_DOWN, OFF);
+            SHOW_COOL_DOWN = false;
+        }
+        
+        if (CURR_TEMP > TARGET_TEMP) {
+            digitalWrite(HEAT_UP, OFF);
+            SHOW_HEAT_UP = false;
         }
 
     } else {
