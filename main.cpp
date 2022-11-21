@@ -9,7 +9,6 @@
 #include <Fonts/FreeMonoBold18pt7b.h>
 #include <Fonts/FreeMonoBold12pt7b.h>
 #include <Fonts/FreeMono9pt7b.h>
-#include <EEPROM.h>
 #include <RotaryEncoder.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
@@ -25,6 +24,7 @@
 #define ROTARY_CLK 32           // GPIO for rotary encoder clock
 #define ROTARY_DT 25            // GPIO for rotary encoder dt
 #define ROTARY_BUTTON 27        // GPIO for rotary encoder button
+#define BTN_PRESS_TIME 250    // Milliseconds Button pressed
 
 #define COOL_DOWN 4             // GPIO for cooling down Relais
 #define HEAT_UP 12              // GPIO for heating up Relais
@@ -34,7 +34,6 @@
 
 #define TEMP 5                  // GPIO for OneWire-Bus
 
-#define ROTARYSTEPS 2
 #define ROTARYMIN 5
 #define ROTARYMAX 25
 
@@ -42,8 +41,8 @@
 // Setting parameters with default values
 // ======================================================================
 
-const char* WIFI_SSID = "WLAN";                      // WLAN-SSID
-const char* WIFI_PW = "74696325262072177928";        // WLAN-Password
+const char* WIFI_SSID = "---";                      // WLAN-SSID
+const char* WIFI_PW = "---";        // WLAN-Password
 String HOSTNAME = "ESP-32";                          // Enter Hostname here
 String MQTT_BROKER = "192.168.178.120";              // MQTT-Broker
 
@@ -63,11 +62,12 @@ boolean SHOW_HEAT_UP = false;
                        
 int currentButtonState = LOW;                 // the current reading from the input pin
 int lastButtonState = LOW;                    // the last reading from the input pin
-int currentCLKState = LOW;
-int lastCLKState = LOW;
+unsigned long start_time = 0;
+unsigned long pressed_time = 0;
 int mqtt_publish_time = 45;                   // time in seconds for publishing MQTT message
 int mqtt_time_counter = 0;
 long lastMillis = 0;
+boolean FLAG = true;
 
 // ======================================================================
 // Initialize Objects
@@ -95,6 +95,8 @@ PubSubClient mqttClient(espClient);
 // Initialize Rotary Encoder
 RotaryEncoder encoder(ROTARY_CLK, ROTARY_DT, RotaryEncoder::LatchMode::TWO03);
 int lastPos = -1;
+unsigned long button_time = 0;          //variables to keep track of the timing of recent interrupts
+unsigned long last_button_time = 0; 
 
 // ======================================================================
 // Functions
@@ -328,7 +330,7 @@ void startWebServer(){
     server.on("/save-config", HTTP_GET, [](AsyncWebServerRequest *request){
         if(DEBUG_SERIAL){Serial.println("Requested config.html page");}
         saveConfig(request);
-        request->send(SPIFFS, "/config.html", String(), false, processor);
+        request->redirect("/config.html");
     });
 
     // Make check.html available
@@ -381,12 +383,22 @@ void initRelayBoard() {
         display.display();
     }
 }
-  
+
+void IRAM_ATTR isr() {
+    button_time = millis();
+    if (button_time - last_button_time > 250)
+    {
+        CONFIG_MODE = !CONFIG_MODE;
+        lastPos = -1;   
+        last_button_time = button_time;
+    }
+}
+
 void initRotaryEncoder() {
   // Setup ESP Rotary Encoder
-  //pinMode (ROTARY_CLK, INPUT_PULLUP);
-  //pinMode (ROTARY_DT, INPUT_PULLUP);
   pinMode (ROTARY_BUTTON, INPUT_PULLUP);
+  //attachInterrupt(ROTARY_BUTTON, isr, FALLING);
+  encoder.setPosition(TARGET_TEMP); // start with the value of TARGET_TEMP.
 
   if(DEBUG_SERIAL) {Serial.println("RotaryEncoder started!");}
   if(DEBUG_OLED){
@@ -500,83 +512,94 @@ void setup() {
 // ======================================================================
 void loop() {
 
-    getTemp();                                                      // get current Temperatures
-
-    currentButtonState = digitalRead(ROTARY_BUTTON);                // read new state
-
-    // read the state of the switch/button:
-    if (lastButtonState == HIGH && currentButtonState == LOW) {     // button is pressed
-        if(CONFIG_MODE) { saveConfig(); }   
-        CONFIG_MODE = !CONFIG_MODE;
-        encoder.setPosition(TARGET_TEMP / ROTARYSTEPS);             // start with the value of TARGET_TEMP.
+    currentButtonState = digitalRead(ROTARY_BUTTON);
+    if(currentButtonState == LOW && lastButtonState == HIGH) {
+        start_time = millis();
+        FLAG = true;
+    } else if (currentButtonState == LOW && lastButtonState == LOW && FLAG) {
+        pressed_time = millis();
+        long press_duration = pressed_time - start_time;
+        if(press_duration > BTN_PRESS_TIME) {
+            CONFIG_MODE = !CONFIG_MODE;
+            lastPos = -1;
+            FLAG = false;   
+        }
     }
-    lastButtonState = currentButtonState;                            // save the the last state
-
-    String info_text = "";
-    
-    if(SWITCH) {                                                    // Steuerung nur zulassen, wenn SWITCH = true      
-        if (CURR_TEMP > TARGET_TEMP + TEMP_HYSTERESIS) {
-            digitalWrite(COOL_DOWN, ON);
-            info_text = "<Cool down>";
-            SHOW_COOL_DOWN = true;
-        }
-
-        if (CURR_TEMP < TARGET_TEMP) {
-            digitalWrite(COOL_DOWN, OFF);
-            info_text = "...";
-            SHOW_COOL_DOWN = false;
-        }
-
-        if ((CURR_TEMP > 10) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS)) {
-            digitalWrite(HEAT_UP, ON);
-            info_text = "<Heat up>";
-            SHOW_HEAT_UP = true;
-        }
-
-        if (CURR_TEMP > TARGET_TEMP) {
-            digitalWrite(HEAT_UP, OFF);
-            info_text = "...";
-            SHOW_HEAT_UP = false;
-        }
-
-    } else {
-        info_text = "<OFF>";
-        digitalWrite(COOL_DOWN, OFF);
-        SHOW_COOL_DOWN = false;
-        digitalWrite(HEAT_UP, OFF);
-        SHOW_HEAT_UP = false;
-    }
+    lastButtonState = currentButtonState;
 
     if(CONFIG_MODE) {
-
         encoder.tick();
-
-        int newPos = encoder.getPosition() * ROTARYSTEPS;
-
+        int newPos = encoder.getPosition(); // get the current physical position and calc the logical position
+        
         if (newPos < ROTARYMIN) {
-            encoder.setPosition(ROTARYMIN / ROTARYSTEPS);
+            encoder.setPosition(ROTARYMIN);
             newPos = ROTARYMIN;
         } else if (newPos > ROTARYMAX) {
-            encoder.setPosition(ROTARYMAX / ROTARYSTEPS);
+            encoder.setPosition(ROTARYMAX);
             newPos = ROTARYMAX;
         }
 
-        TARGET_TEMP = newPos;
-     
         // Show Config mode on OLED
-        display.clearDisplay();
-        display.setFont(&FreeMonoBold12pt7b);
-        display.setCursor(10, 14);
-        display.print("Target:");
-        display.setFont(&FreeMonoBold18pt7b);
-        display.setCursor(6, 50);
-        display.print(TARGET_TEMP);
-        display.print(" C");
-        display.display();
+        if (lastPos != newPos) { 
+
+            TARGET_TEMP = newPos;
+
+            display.clearDisplay();
+            display.setFont(&FreeMonoBold12pt7b);
+            display.setCursor(10, 14);
+            display.print("Target:");
+            display.setFont(&FreeMonoBold18pt7b);
+            display.setCursor(6, 50);
+            display.print(TARGET_TEMP);
+            display.print(" C  ");
+            display.display();
+
+            saveConfig();
+            lastPos = newPos;
+        }
+
     } else {
         //publish a message roughly every second.
         if ((millis() - lastMillis) > 1000) {
             lastMillis = millis();
+
+            getTemp();                                                      // get current Temperatures
+
+            String info_text = "";
+    
+            if(SWITCH) {                                                    // Steuerung nur zulassen, wenn SWITCH = true      
+                if (CURR_TEMP > TARGET_TEMP + TEMP_HYSTERESIS) {
+                    digitalWrite(COOL_DOWN, ON);
+                    info_text = "<Cool down>";
+                    SHOW_COOL_DOWN = true;
+                }
+
+                if (CURR_TEMP < TARGET_TEMP) {
+                    digitalWrite(COOL_DOWN, OFF);
+                    info_text = "...";
+                    SHOW_COOL_DOWN = false;
+                }
+
+                if ((CURR_TEMP > 10) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS)) {
+                    digitalWrite(HEAT_UP, ON);
+                    info_text = "<Heat up>";
+                    SHOW_HEAT_UP = true;
+                }
+
+                if (CURR_TEMP > TARGET_TEMP) {
+                    digitalWrite(HEAT_UP, OFF);
+                    info_text = "...";
+                    SHOW_HEAT_UP = false;
+                }
+
+            } else {
+                info_text = "<OFF>";
+                digitalWrite(COOL_DOWN, OFF);
+                SHOW_COOL_DOWN = false;
+                digitalWrite(HEAT_UP, OFF);
+                SHOW_HEAT_UP = false;
+            }
+
             // Show Working mode on OLED
             display.clearDisplay();
             display.setFont(&FreeMonoBold18pt7b);
