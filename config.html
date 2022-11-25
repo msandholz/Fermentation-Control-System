@@ -3,17 +3,17 @@
 <head>
     <title>%HOSTNAME%</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
     <div class="topnav">
-      <a href="/"><i class="fa fa-home" style="font-size:36px"></i></a>
-      <a href="/config"><i class="fa fa-save" style="font-size:36px;"></i></a>
-      <a href="/check"><i class="fa fa-align-justify" style="font-size:36px"></i></a>
-      <a href="/update"><i class="fa fa-upload" style="font-size:36px"></i></a>
+        <a href="/"><i class="fa-solid fa-house-chimney" style="font-size:36px"></i></a>
+        <a href="/config"><i class="fa-solid fa-gear" style="font-size:36px;"></i></a>
+        <a href="/check"><i class="fa-solid fa-list-check" style="font-size:36px"></i></a>
+        <a href="%EXTERNAL_URL%" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
+        <a href="/update" target="_blank"><i class="fa-solid fa-upload" style="font-size:36px"></i></a>
     </div>
     
     <div class="row">
@@ -36,6 +36,10 @@
            <tr>
             <td class="right">MQTT-Boker:</td>
             <td><input type="text" name="MQTT_BROKER" value="%MQTT_BROKER%"></td>
+           </tr>
+           <tr>
+            <td class="right">External URL:</td>
+            <td><input type="text" name="EXTERNAL_URL" value="%EXTERNAL_URL%"></td>
            </tr>
            <tr>
             <td class="right">Hysteresis:</td>
