@@ -7,11 +7,22 @@
     font-family: Arial;
     background-color: #f1f1f1;
   }
-  
+
   .center {
     align-items: center;
   }
+
+  .row_center{
+    height: 30px;
+    vertical-align: baseline;
+  }
   
+  .output {
+        border: 2px;
+        border-radius: 5px;
+        width: 60%;
+  }
+
   .right {
       text-align: right;
   }
@@ -57,9 +68,13 @@
   }
   
   .check-result {
-    width: 350px;
-    height: 50px;
-    border: 3px solid grey; 
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid #26b34b;
+    background-color: #ddd;
+    padding: 20px; 
+    width: 80%;
+    min-height: 15px;  
   }
   
   /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
@@ -128,13 +143,3 @@
   .slider.round:before {
     border-radius: 50%;
   }
-
-  .output {
-  		border-radius: 15px;
-        text-align: center;
-  		border: 2px solid #26b34b;
-        background-color: #f2f2f2;
-  		padding: 20px; 
-  		width: 80%;
-  		min-height: 15px;  
-    }
