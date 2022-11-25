@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define VERSION 0.5
+#define VERSION 0.6
 
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
@@ -41,10 +41,11 @@
 // Setting parameters with default values
 // ======================================================================
 
-const char* WIFI_SSID = "--";                      // WLAN-SSID
+const char* WIFI_SSID = "---";                      // WLAN-SSID
 const char* WIFI_PW = "---";        // WLAN-Password
 String HOSTNAME = "ESP-32";                          // Enter Hostname here
-String MQTT_BROKER = "192.168.178.120";              // MQTT-Broker
+String MQTT_BROKER = "---";              // MQTT-Broker
+String EXTERNAL_URL = "www.telekom.de";              // URL of external Website
 
 int CURR_TEMP = 0;
 float CURR_TEMP_F = 0;
@@ -130,6 +131,8 @@ void loadConfig(){
         HOSTNAME = hostname.c_str();
         String mqtt_broker = doc["MQTT_BROKER"];     
         MQTT_BROKER = mqtt_broker.c_str();
+        String ext_url = doc["EXTERNAL_URL"];     
+        EXTERNAL_URL = mqtt_broker.c_str();
         TARGET_TEMP = doc["TARGET_TEMP"];
         TEMP_HYSTERESIS = doc["TEMP_HYSTERESIS"];
         POWER_HEAT = doc["POWER_HEAT"];
@@ -168,6 +171,11 @@ void saveConfig(AsyncWebServerRequest *request) {
             if(p->name() == "MQTT_BROKER") {
                 MQTT_BROKER = p->value();
                 doc["MQTT_BROKER"] = MQTT_BROKER;
+            }
+
+            if(p->name() == "EXTERNAL_URL") {
+                EXTERNAL_URL = p->value();
+                doc["EXTERNAL_URL"] = EXTERNAL_URL;
             }
 
             if(p->name() == "TEMP_HYSTERESIS") {
@@ -214,6 +222,7 @@ void saveConfig() {
         DynamicJsonDocument doc(1024);
         doc["HOSTNAME"] = HOSTNAME;
         doc["MQTT_BROKER"] = MQTT_BROKER;
+        doc["EXTERNAL_URL"] = EXTERNAL_URL;
         doc["TEMP_HYSTERESIS"] = TEMP_HYSTERESIS;
         doc["TARGET_TEMP"] = TARGET_TEMP;
         doc["POWER_HEAT"] = POWER_HEAT;
@@ -264,6 +273,7 @@ void connectWifi() {
 String processor(const String& var){
 
     if(var == "HOSTNAME"){ return HOSTNAME; }
+    if(var == "EXTERNAL_URL"){ return EXTERNAL_URL; }
     if(var == "ROOM_TEMP"){  return String(ROOM_TEMP_F);  }
     if(var == "TARGET_TEMP"){  return String(TARGET_TEMP);  }
     if(var == "FRIDGE_TEMP"){  return String(CURR_TEMP_F);  }
@@ -286,10 +296,10 @@ String processor(const String& var){
     if (var == "COOL_HEAT_STATUS") {
         String cool_heat_status = "";       
         if(SHOW_HEAT_UP) {
-            cool_heat_status = " <i class='fa fa-fire' style='font-size:24px;color:orange'></i>";
+            cool_heat_status = "   <i class='fa-solid fa-temperature-arrow-up' style='font-size:24px;color:orange'></i>";
         } 
         if(SHOW_COOL_DOWN) {
-            cool_heat_status = "<i class='fas fa-snowflake' style='font-size:24px;color:blue'></i>";
+            cool_heat_status = "   <i class='fa-solid fa-temperature-arrow-down' style='font-size:24px;color:blue'></i>";
         } 
         return cool_heat_status;
     } 
@@ -330,13 +340,19 @@ void startWebServer(){
     server.on("/save-config", HTTP_GET, [](AsyncWebServerRequest *request){
         if(DEBUG_SERIAL){Serial.println("Requested config.html page");}
         saveConfig(request);
-        request->redirect("/config.html");
+        request->redirect("/config");
     });
 
     // Make check.html available
     server.on("/check", HTTP_GET, [](AsyncWebServerRequest *request){
         if(DEBUG_SERIAL){Serial.println("Requested check.html page");}
         request->send(SPIFFS, "/check.html", String(), false, processor);
+    });
+
+    // Make check.html available
+    server.on("/upload", HTTP_GET, [](AsyncWebServerRequest *request){
+        if(DEBUG_SERIAL){Serial.println("Requested upload.html page");}
+        request->send(SPIFFS, "/upload.html", String(), false, processor);
     });
 
     // Make style.css available
