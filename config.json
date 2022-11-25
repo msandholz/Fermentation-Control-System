@@ -1,6 +1,7 @@
 {
     "HOSTNAME":"ESP-Fermentation",
     "MQTT_BROKER":"192.168.178.12",
+    "EXTERNAL_URL":"http://192.168.178.71:3000/d/cLwyHTWgz/fermentation-control-system?orgId=1",
     "TARGET_TEMP":10, 
     "TEMP_HYSTERESIS":1,
     "POWER_HEAT":35,
