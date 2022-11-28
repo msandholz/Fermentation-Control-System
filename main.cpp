@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define VERSION 0.6
+#define VERSION 0.7
 
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
@@ -45,7 +45,7 @@ const char* WIFI_SSID = "---";                      // WLAN-SSID
 const char* WIFI_PW = "---";        // WLAN-Password
 String HOSTNAME = "ESP-32";                          // Enter Hostname here
 String MQTT_BROKER = "---";              // MQTT-Broker
-String EXTERNAL_URL = "www.telekom.de";              // URL of external Website
+String EXTERNAL_URL = "---";              // URL of external Website
 
 int CURR_TEMP = 0;
 float CURR_TEMP_F = 0;
@@ -274,9 +274,9 @@ String processor(const String& var){
 
     if(var == "HOSTNAME"){ return HOSTNAME; }
     if(var == "EXTERNAL_URL"){ return EXTERNAL_URL; }
-    if(var == "ROOM_TEMP"){  return String(ROOM_TEMP_F);  }
+    if(var == "ROOM_TEMP"){  return String(ROOM_TEMP_F, 1);  }
     if(var == "TARGET_TEMP"){  return String(TARGET_TEMP);  }
-    if(var == "FRIDGE_TEMP"){  return String(CURR_TEMP_F);  }
+    if(var == "FRIDGE_TEMP"){  return String(CURR_TEMP_F, 1);  }
   
     if(var == "POWER_CONSUMPTION") {   
         int power_consumption = POWER_IDLE;
@@ -347,12 +347,6 @@ void startWebServer(){
     server.on("/check", HTTP_GET, [](AsyncWebServerRequest *request){
         if(DEBUG_SERIAL){Serial.println("Requested check.html page");}
         request->send(SPIFFS, "/check.html", String(), false, processor);
-    });
-
-    // Make check.html available
-    server.on("/upload", HTTP_GET, [](AsyncWebServerRequest *request){
-        if(DEBUG_SERIAL){Serial.println("Requested upload.html page");}
-        request->send(SPIFFS, "/upload.html", String(), false, processor);
     });
 
     // Make style.css available
@@ -602,7 +596,6 @@ void loop() {
 
                 if (CURR_TEMP < TARGET_TEMP) {
                     digitalWrite(COOL_DOWN, OFF);
-                    info_text = "...";
                     SHOW_COOL_DOWN = false;
                 }
 
@@ -614,7 +607,6 @@ void loop() {
 
                 if (CURR_TEMP > TARGET_TEMP) {
                     digitalWrite(HEAT_UP, OFF);
-                    info_text = "...";
                     SHOW_HEAT_UP = false;
                 }
 
@@ -648,6 +640,7 @@ void loop() {
             mqtt_time_counter = mqtt_time_counter + 1;
             if(mqtt_time_counter > mqtt_publish_time) {
                 mqtt_time_counter = 0;
+                if(WiFi.status() != WL_CONNECTED) { connectWifi(); }
                 publishMessage();
             }
         }
