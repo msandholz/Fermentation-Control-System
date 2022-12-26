@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Wifi.h>
+#include <WiFi.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <AsyncTCP.h>
@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define VERSION 0.8
+#define VERSION 0.7
 
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
@@ -41,8 +41,8 @@
 // Setting parameters with default values
 // ======================================================================
 
-const char* WIFI_SSID = "---";                      // WLAN-SSID
-const char* WIFI_PW = "---";        // WLAN-Password
+const char* WIFI_SSID = "WLAN";                      // WLAN-SSID
+const char* WIFI_PW = "74696325262072177928";        // WLAN-Password
 String HOSTNAME = "ESP-32";                          // Enter Hostname here
 String MQTT_BROKER = "192.168.178.120";              // MQTT-Broker
 String EXTERNAL_URL = "www.telekom.de";              // URL of external Website
@@ -57,7 +57,7 @@ int POWER_COOL = 240;
 int POWER_IDLE = 10;
 
 boolean CONFIG_MODE = false;
-boolean SWITCH = true;                        // Enanble Fermantaion Control
+boolean SWITCH = true;                        // Enable Fermantaion Control
 boolean SHOW_COOL_DOWN = false;
 boolean SHOW_HEAT_UP = false;
                        
@@ -132,7 +132,7 @@ void loadConfig(){
         String mqtt_broker = doc["MQTT_BROKER"];     
         MQTT_BROKER = mqtt_broker.c_str();
         String ext_url = doc["EXTERNAL_URL"];     
-        EXTERNAL_URL = ext_url.c_str();
+        EXTERNAL_URL = mqtt_broker.c_str();
         TARGET_TEMP = doc["TARGET_TEMP"];
         TEMP_HYSTERESIS = doc["TEMP_HYSTERESIS"];
         POWER_HEAT = doc["POWER_HEAT"];
@@ -387,7 +387,7 @@ void initRelayBoard() {
     pinMode(HEAT_UP, OUTPUT_OPEN_DRAIN);
     digitalWrite(HEAT_UP, HIGH);
     
-    if(DEBUG_SERIAL) { Serial.println("Relay initialized!");     }
+    if(DEBUG_SERIAL) { Serial.println("Relais initialized!");     }
     if(DEBUG_OLED){
         display.println("-Relay OK");
         display.display();
@@ -627,7 +627,7 @@ void loop() {
             display.setFont(&FreeMono9pt7b);
 
             CURR_TEMP = (int)CURR_TEMP_F;
-            int offset = ((118 - (info_text.length()*10))/2);
+            int offset = ((120 - (info_text.length()*9))/2);
             display.setCursor(offset, 41);
             display.print(info_text);
 
