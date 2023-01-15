@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define VERSION 0.7
+#define VERSION 0.81
 
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
@@ -24,7 +24,7 @@
 #define ROTARY_CLK 32           // GPIO for rotary encoder clock
 #define ROTARY_DT 25            // GPIO for rotary encoder dt
 #define ROTARY_BUTTON 27        // GPIO for rotary encoder button
-#define BTN_PRESS_TIME 250    // Milliseconds Button pressed
+#define BTN_PRESS_TIME 250      // Milliseconds Button pressed
 
 #define COOL_DOWN 4             // GPIO for cooling down Relais
 #define HEAT_UP 12              // GPIO for heating up Relais
@@ -34,15 +34,15 @@
 
 #define TEMP 5                  // GPIO for OneWire-Bus
 
-#define ROTARYMIN 5
+#define ROTARYMIN 1
 #define ROTARYMAX 25
 
 // ======================================================================
 // Setting parameters with default values
 // ======================================================================
 
-const char* WIFI_SSID = "---";                      // WLAN-SSID
-const char* WIFI_PW = "---";        // WLAN-Password
+const char* WIFI_SSID = "...";                      // WLAN-SSID
+const char* WIFI_PW = "...";        // WLAN-Password
 String HOSTNAME = "ESP-32";                          // Enter Hostname here
 String MQTT_BROKER = "192.168.178.120";              // MQTT-Broker
 String EXTERNAL_URL = "www.telekom.de";              // URL of external Website
@@ -436,6 +436,7 @@ void initDisplay() {
     delay(2000); // Pause for 2 seconds
 
     display.clearDisplay();
+    display.setRotation(0);
     display.setTextColor(WHITE);
     display.setTextSize(1);
 
@@ -448,10 +449,10 @@ void initDisplay() {
 void getTemp() {
   sensors.requestTemperatures();
   float temp_fridge= sensors.getTempCByIndex(0);
-  if (temp_fridge > 2) { CURR_TEMP_F = temp_fridge; }
+  if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; }
   
   float temp_room = sensors.getTempCByIndex(1);
-  if (temp_room > 2) { ROOM_TEMP_F = temp_room; }
+  if (temp_room > 0) { ROOM_TEMP_F = temp_room; }
 }
 
 void publishMessage() {
@@ -620,6 +621,7 @@ void loop() {
 
             // Show Working mode on OLED
             display.clearDisplay();
+            display.setRotation(0);
             display.setFont(&FreeMonoBold18pt7b);
             display.setCursor(10, 22);
             display.print(CURR_TEMP_F, 1);
