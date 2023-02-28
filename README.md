@@ -4,6 +4,7 @@
 
 ## Release 0.83
 - Solve bug in line 140
+
 String ext_url = doc["EXTERNAL_URL"];     
 EXTERNAL_URL = mqtt_broker.c_str()
 
