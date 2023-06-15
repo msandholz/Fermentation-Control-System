@@ -2,7 +2,7 @@
 
 ## ToDo: Next Release (0.84):
 - Check calculation of character positioning in line 938
-- Implement an interval for heat/cool-switching every x seconds
+- Implement delay to switch off the compressor (configurable in seconds)
 
 ## Release 0.83
 - Solve bug in line 140
