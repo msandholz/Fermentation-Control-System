@@ -1,6 +1,8 @@
 # Fermentation-Control-System
 
-## ToDo: Next Release (0.83):
+## ToDo: Next Release (0.84):
+- Check calculation of character positioning in line
+- Implement an interval for heat/cool-switching every x seconds
 
 ## Release 0.83
 - Solve bug in line 140
