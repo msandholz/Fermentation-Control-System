@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define VERSION 0.83
+#define VERSION 0.84
 
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
@@ -41,8 +41,8 @@
 // Setting parameters with default values
 // ======================================================================
 
-const char* WIFI_SSID = "...";                      // WLAN-SSID
-const char* WIFI_PW = ".....";        // WLAN-Password
+const char* WIFI_SSID = "1234";                      // WLAN-SSID
+const char* WIFI_PW = "1234";        // WLAN-Password
 String HOSTNAME = "ESP-32";                          // Enter Hostname here
 String MQTT_BROKER = "192.168.178.120";              // MQTT-Broker
 String EXTERNAL_URL = "www.telekom.de";              // URL of external Website
@@ -67,6 +67,10 @@ unsigned long start_time = 0;
 unsigned long pressed_time = 0;
 int mqtt_publish_time = 45;                   // time in seconds for publishing MQTT message
 int mqtt_time_counter = 0;
+
+int cool_publish_time = 15;                   // time in seconds for cool switching
+int cool_time_counter = cool_publish_time;
+
 long lastMillis = 0;
 boolean FLAG = true;
 
@@ -579,8 +583,10 @@ void loop() {
             SHOW_HEAT_UP = false;
         }
 
+        cool_time_counter = cool_publish_time;
+
     } else {
-        //publish a message roughly every second.
+        //publish a message roughly every five seconds.
         if ((millis() - lastMillis) > 1000) {
             lastMillis = millis();
 
@@ -589,14 +595,24 @@ void loop() {
             String info_text = "";
     
             if(SWITCH) {                                                    // Steuerung nur zulassen, wenn SWITCH = true      
-                if (CURR_TEMP > TARGET_TEMP + TEMP_HYSTERESIS) {
-                    digitalWrite(COOL_DOWN, ON);
-                    info_text = "<Cool down>";
-                    SHOW_COOL_DOWN = true;
-                } else {
-                    digitalWrite(COOL_DOWN, OFF);
-                    SHOW_COOL_DOWN = false;
+                
+                cool_time_counter = cool_time_counter + 1;
+                if(cool_time_counter > cool_publish_time) {                 // Kompressor nur alle 15 Sekunden ein- bzw. ausschalten
+                    cool_time_counter = 0;
+                
+                    if (CURR_TEMP > TARGET_TEMP + TEMP_HYSTERESIS) {
+                        digitalWrite(COOL_DOWN, ON);
+                        info_text = "<COOL DOWN>";
+                        SHOW_COOL_DOWN = true;
+                    } else {
+                        digitalWrite(COOL_DOWN, OFF);
+                        SHOW_COOL_DOWN = false;
+                    }
                 }
+
+                if (SHOW_COOL_DOWN) {
+                        info_text = "<COOL DOWN>";
+                    }
                 
                 //if (CURR_TEMP < TARGET_TEMP) {
                 //    digitalWrite(COOL_DOWN, OFF);
@@ -605,7 +621,7 @@ void loop() {
 
                 if ((CURR_TEMP > 10) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS)) {
                     digitalWrite(HEAT_UP, ON);
-                    info_text = "<Heat up>";
+                    info_text = "<HEAT UP>";
                     SHOW_HEAT_UP = true;
                 } else {
                     digitalWrite(HEAT_UP, OFF);
@@ -619,10 +635,13 @@ void loop() {
 
             } else {
                 info_text = "<OFF>";
+                //info_text = "ABCDEFGHIJK";
                 digitalWrite(COOL_DOWN, OFF);
                 SHOW_COOL_DOWN = false;
                 digitalWrite(HEAT_UP, OFF);
                 SHOW_HEAT_UP = false;
+
+                cool_time_counter = cool_publish_time;
             }
 
             // Show Working mode on OLED
@@ -635,7 +654,7 @@ void loop() {
             display.setFont(&FreeMono9pt7b);
 
             CURR_TEMP = (int)CURR_TEMP_F;
-            int offset = ((120 - (info_text.length()*9))/2);
+            int offset = ((127 - (info_text.length()*11))/2);
             display.setCursor(offset, 41);
             display.print(info_text);
 
