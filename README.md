@@ -1,13 +1,24 @@
 # Fermentation-Control-System
 
 ## ToDo: Next Release (0.85):
-- Line 656 [CURR_TEMP = (int)CURR_TEMP_F;] --> 594
-- Change   [if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; }] to
+- Line 656: [CURR_TEMP = (int)CURR_TEMP_F;] --> 594
+- Change Line 456: [if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; }] to
 
-  float CURR_TEMP_F = -22;
-  float temp_fridge= sensors.getTempCByIndex(0);
-  if (CURR_TEMP_F == -22 || temp_fridge > CURR_TEMP_F+3 || temp_fridge < CURR_TEMP_F-3)
-    { CURR_TEMP_F = temp_fridge;}
+  Line  51: float CURR_TEMP_F = -22;
+  Line 455: float temp_fridge= sensors.getTempCByIndex(0);
+  Line 456: if (CURR_TEMP_F == -22 || temp_fridge > CURR_TEMP_F+3 || temp_fridge < CURR_TEMP_F-3)
+                  { CURR_TEMP_F = temp_fridge;}
+
+  - Heatprotection Compressor:
+    Line  53: float COMP_TEMP_F = -22;
+    Line  54: int COMP_TEMP_SWITCHOFF = 50;
+    Line 460: float temp_comp = sensors.getTempCByIndex(2);
+    Line 461: if (COMP_TEMP_F == -22 || temp_comp > COMP_TEMP_F+3 || temp_comp < COMP_TEMP_F-3)
+                  { COMP_TEMP_F = temp_comp;}
+    Line 604: if (int COMP_TEMP_F > COMP_TEMP_SWITCHOFF)
+                  { digitalWrite(COOL_DOWN, OFF);
+                    info_text = "<ALERT>";
+                    SHOW_COOL_DOWN = false;}
   
 
 
