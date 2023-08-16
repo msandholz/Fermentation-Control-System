@@ -2,6 +2,8 @@
 
 ## ToDo: Next Release (0.85):
 - Line 656 [CURR_TEMP = (int)CURR_TEMP_F;] --> 594
+- Change   [if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; }] to
+  if (
 
 
 ## Release 0.84:
