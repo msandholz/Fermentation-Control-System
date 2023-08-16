@@ -1,6 +1,10 @@
 # Fermentation-Control-System
 
-## ToDo: Next Release (0.84):
+## ToDo: Next Release (0.85):
+- Line 656 [CURR_TEMP = (int)CURR_TEMP_F;] --> 594
+
+
+## Release 0.84:
 - Check calculation of character positioning in line 938
 - Implement delay to switch off the compressor (configurable in seconds)
 
