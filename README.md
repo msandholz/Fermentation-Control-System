@@ -3,7 +3,12 @@
 ## ToDo: Next Release (0.85):
 - Line 656 [CURR_TEMP = (int)CURR_TEMP_F;] --> 594
 - Change   [if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; }] to
-  if (
+
+  float CURR_TEMP_F = -22;
+  float temp_fridge= sensors.getTempCByIndex(0);
+  if (CURR_TEMP_F == -22 || temp_fridge > CURR_TEMP_F+3 || temp_fridge < CURR_TEMP_F-3)
+    { CURR_TEMP_F = temp_fridge;}
+  
 
 
 ## Release 0.84:
