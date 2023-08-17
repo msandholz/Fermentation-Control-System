@@ -11,15 +11,15 @@
                   `{ CURR_TEMP_F = temp_fridge;}`
 
 - Heatprotection Compressor:
-    Line  53: float COMP_TEMP_F = -22;
-    Line  54: int COMP_TEMP_SWITCHOFF = 50;
-    Line 460: float temp_comp = sensors.getTempCByIndex(2);
-    Line 461: if (COMP_TEMP_F == -22 || temp_comp > COMP_TEMP_F+3 || temp_comp < COMP_TEMP_F-3)
-                  { COMP_TEMP_F = temp_comp;}
-    Line 604: if (int COMP_TEMP_F > COMP_TEMP_SWITCHOFF)
+    Line  53: `float COMP_TEMP_F = -22;`
+    Line  54: `int COMP_TEMP_SWITCHOFF = 50;`
+    Line 460: `float temp_comp = sensors.getTempCByIndex(2);`
+    Line 461: `if (COMP_TEMP_F == -22 || temp_comp > COMP_TEMP_F+3 || temp_comp < COMP_TEMP_F-3)
+                  { COMP_TEMP_F = temp_comp;}`
+    Line 604: `if (int COMP_TEMP_F > COMP_TEMP_SWITCHOFF)
                   { digitalWrite(COOL_DOWN, OFF);
                     info_text = "<ALERT>";
-                    SHOW_COOL_DOWN = false;}
+                    SHOW_COOL_DOWN = false;}`
   
 
 
