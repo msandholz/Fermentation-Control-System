@@ -7,8 +7,22 @@
 
   Line  51: `float CURR_TEMP_F = -22;`
   Line 455: `float temp_fridge= sensors.getTempCByIndex(0);`
-  Line 456: `if (CURR_TEMP_F == -22 || temp_fridge > CURR_TEMP_F+3 || temp_fridge < CURR_TEMP_F-3)`
+  Line 456: `if (CURR_TEMP_F == -22 || temp_fridge > CURR_TEMP_F+3 && temp_fridge < CURR_TEMP_F-3)`
                   `{ CURR_TEMP_F = temp_fridge;}`
+
+- Change Hysterese algorythm:
+  `if (!SHOW_COOL_DOWN) {
+        if (CURR_TEMP  >= TARGET_TEMP + TEMP_HYSTERESIS) {
+            digitalWrite(COOL_DOWN, ON);
+            info_text = "<COOL DOWN>";
+            SHOW_COOL_DOWN = true;
+        }
+    } else {
+        if (CURR_TEMP <= TARGET_TEMP - TEMP_HYSTERESIS) {
+             digitalWrite(COOL_DOWN, OFF);
+             SHOW_COOL_DOWN = false;
+        }
+    }`
 
 - Heatprotection Compressor:
     Line  53: `float COMP_TEMP_F = -22;`
