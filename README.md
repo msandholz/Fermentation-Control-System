@@ -1,7 +1,7 @@
 # Fermentation-Control-System
 
 ## ToDo: Next Release (0.85):
-- Line 656: '''CURR_TEMP = (int)CURR_TEMP_F;''' --> Line 594: `CURR_TEMP = (round)CURR_TEMP_F;`
+- Line 656: `CURR_TEMP = (int)CURR_TEMP_F;` --> Line 594: `CURR_TEMP = (round)CURR_TEMP_F;`
 - Error correction temperature sensor:
   Change Line 456: if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; } to
 
