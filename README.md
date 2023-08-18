@@ -7,6 +7,26 @@
   Line 490: `doc["room_temp"] = int(ROOM_TEMP_F);` --> `doc["room_temp"] = ROOM_TEMP_F;`
   Line 491: `doc["fridge_temp"] = CURR_TEMP;` --> `doc["fridge_temp"] = CURR_TEMP_F;`
 
+- Kompressor laufzeit konfigurierbar machen
+- config.json:
+  Line 7: `"COMP_RUNNING_TIME":60,`
+
+- config.html:
+  Lin 48: `<tr><td class="right">Compressor running time:</td><td><input type="number" name="COMP_RUNNING_TIME" value="%COMP_RUNNING_TIME%"></td></tr>`
+  
+- main.ccp:
+  Line 55:   `int COMP_RUNNING_TIME = 60;`
+  Line 145:  `COMP_RUNNING_TIME = doc["COMP_RUNNING_TIME"];`
+  Line 189:  `if(p->name() == "COMP_RUNNING_TIME") {
+                COMP_RUNNING_TIME = p->value().toInt();
+                doc["COMP_RUNNING_TIME"] = COMP_RUNNING_TIME;
+            }`
+  Line 231: `doc["COMP_RUNNING_TIME"] = COMP_RUNNING_TIME;`
+  Line 351: `if(var == "COMP_RUNNING_TIME"){  return String(COMP_RUNNING_TIME);  }`
+-  
+  
+
+
 
 - Heatprotection Compressor:
     Line  53: `float COMP_TEMP_F = -22;`
