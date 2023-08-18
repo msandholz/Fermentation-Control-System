@@ -11,7 +11,7 @@
 - config.json:
   Line 7: `"COMP_RUNNING_TIME":60,`
 
-long lastCompMillis = 0;
+`long lastCompMillis = 0;
 long COMP_RUNNING_TIME = 60*1000;
 boolean pinstate = false;
 
@@ -26,7 +26,7 @@ void switchCompressor(boolean isOn) {
 			pinstate = isOn;
 		}
 	} 
-}
+}`
 
   
 
