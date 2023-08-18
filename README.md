@@ -11,6 +11,25 @@
 - config.json:
   Line 7: `"COMP_RUNNING_TIME":60,`
 
+long lastCompMillis = 0;
+long COMP_RUNNING_TIME = 60*1000;
+boolean pinstate = false;
+
+void switchCompressor(boolean isOn) {
+
+	if(isON=!pinstate){
+		lastCompMillis = millis();
+		if ((millis() - lastMillis) < COMP_RUNNING_TIME) {
+			digitalWrite(COOL_DOWN, !isON); 
+		} else{
+			digitalWrite(COOL_DOWN, ON); 
+			pinstate = isOn;
+		}
+	} 
+}
+
+  
+
 - config.html:
   Lin 48: `<tr><td class="right">Compressor running time:</td><td><input type="number" name="COMP_RUNNING_TIME" value="%COMP_RUNNING_TIME%"></td></tr>`
   
