@@ -2,6 +2,12 @@
 
 
 ## ToDo: Next Release (0.86):
+
+- Send Float-Values to Grafana:
+  Line 490: `doc["room_temp"] = int(ROOM_TEMP_F);` --> `doc["room_temp"] = ROOM_TEMP_F;`
+  Line 491: `doc["fridge_temp"] = CURR_TEMP;` --> `doc["fridge_temp"] = CURR_TEMP_F;`
+
+
 - Heatprotection Compressor:
     Line  53: `float COMP_TEMP_F = -22;`
     Line  54: `int COMP_TEMP_SWITCHOFF = 50;`
