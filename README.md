@@ -1,5 +1,26 @@
 # Fermentation-Control-System: Change Log
 
+## ToDo: Next Release (0.87): 
+- Heatprotection Compressor:
+    Line  53: `float COMP_TEMP_F = -22;`
+    Line  54: `int COMP_TEMP_THRESHOLD = 50;`
+    Line 460: `float temp_comp = sensors.getTempCByIndex(2);`
+    Line 461: `if (COMP_TEMP_F == -22 || temp_comp > COMP_TEMP_F+3 || temp_comp < COMP_TEMP_F-3)
+                  { COMP_TEMP_F = temp_comp;}`
+    Line 604: `if (int COMP_TEMP_F > COMP_TEMP_SWITCHOFF)
+                  { digitalWrite(COOL_DOWN, OFF);
+                    info_text = "<ALERT>";
+                    SHOW_COOL_DOWN = false;}`
+  
+- Temperaturschwellwert konfigurierbar machen
+- config.json:
+  Line 7: `"COMP_TEMP_THRESHOLD":50,`
+  
+- config.html:
+  Lin 48: `<tr><td class="right">Compressor temp threshold [%deg;C]:</td><td><input type="number" name="COMP_TEMP_THRESHOLD" value="%COMP_TEMP_THRESHOLD%"></td></tr>`
+
+- index.html:
+  Line 29: `<tr><td class="right">Compressor Temp:</td><td><strong>%COMP_TEMP_THRESHOLD% &#x2103;</strong></td></tr>`
 
 ## ToDo: Next Release (0.86):
 
@@ -10,26 +31,7 @@
 - Kompressor laufzeit konfigurierbar machen
 - config.json:
   Line 7: `"COMP_RUNNING_TIME":60,`
-
-`long lastCompMillis = 0;
-long COMP_RUNNING_TIME = 60*1000;
-boolean pinstate = false;
-
-void switchCompressor(boolean isOn) {
-
-	if(isON=!pinstate){
-		lastCompMillis = millis();
-		if ((millis() - lastMillis) < COMP_RUNNING_TIME) {
-			digitalWrite(COOL_DOWN, !isON); 
-		} else{
-			digitalWrite(COOL_DOWN, ON); 
-			pinstate = isOn;
-		}
-	} 
-}`
-
   
-
 - config.html:
   Lin 48: `<tr><td class="right">Compressor running time:</td><td><input type="number" name="COMP_RUNNING_TIME" value="%COMP_RUNNING_TIME%"></td></tr>`
   
@@ -42,23 +44,8 @@ void switchCompressor(boolean isOn) {
             }`
   Line 231: `doc["COMP_RUNNING_TIME"] = COMP_RUNNING_TIME;`
   Line 351: `if(var == "COMP_RUNNING_TIME"){  return String(COMP_RUNNING_TIME);  }`
--  
+
   
-
-
-
-- Heatprotection Compressor:
-    Line  53: `float COMP_TEMP_F = -22;`
-    Line  54: `int COMP_TEMP_SWITCHOFF = 50;`
-    Line 460: `float temp_comp = sensors.getTempCByIndex(2);`
-    Line 461: `if (COMP_TEMP_F == -22 || temp_comp > COMP_TEMP_F+3 || temp_comp < COMP_TEMP_F-3)
-                  { COMP_TEMP_F = temp_comp;}`
-    Line 604: `if (int COMP_TEMP_F > COMP_TEMP_SWITCHOFF)
-                  { digitalWrite(COOL_DOWN, OFF);
-                    info_text = "<ALERT>";
-                    SHOW_COOL_DOWN = false;}`
-
-
 ## Release (0.85):
 - Line 656: `CURR_TEMP = (int)CURR_TEMP_F;` --> Line 594: `CURR_TEMP = (round)CURR_TEMP_F;`
 - Error correction temperature sensor:
