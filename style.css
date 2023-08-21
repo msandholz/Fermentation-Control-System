@@ -143,3 +143,7 @@
   .slider.round:before {
     border-radius: 50%;
   }
+
+  #green {color:#26b34b;}
+  #amber {color:#ee9a1b;}
+  #red {color:#ee1b24;}
