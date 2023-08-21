@@ -3,7 +3,6 @@
 ## ToDo: Next Release (0.87): 
 - Heatprotection Compressor:
     Line  53: `float COMP_TEMP_F = -22;`
-    Line  54: `int COMP_TEMP_THRESHOLD = 50;`
     Line 460: `float temp_comp = sensors.getTempCByIndex(2);`
     Line 461: `if (COMP_TEMP_F == -22 || temp_comp > COMP_TEMP_F+3 || temp_comp < COMP_TEMP_F-3)
                   { COMP_TEMP_F = temp_comp;}`
@@ -21,6 +20,17 @@
 
 - index.html:
   Line 29: `<tr><td class="right">Compressor Temp:</td><td><strong>%COMP_TEMP_THRESHOLD% &#x2103;</strong></td></tr>`
+
+- main.ccp:
+  Line  54: `int COMP_TEMP_THRESHOLD = 50;`
+  Line 145:  `COMP_TEMP_THRESHOLD = doc["COMP_TEMP_THRESHOLD"];`
+  Line 189:  `if(p->name() == "COMP_TEMP_THRESHOLD") {
+                COMP_TEMP_THRESHOLD = p->value().toInt();
+                doc["COMP_TEMP_THRESHOLD"] = COMP_TEMP_THRESHOLD;
+            }`
+  Line 231: `doc["COMP_TEMP_THRESHOLD"] = COMP_TEMP_THRESHOLD;`
+  Line 351: `if(var == "COMP_TEMP_THRESHOLD"){  return String(COMP_TEMP_THRESHOLD);  }`
+
 
 ## ToDo: Next Release (0.86):
 
