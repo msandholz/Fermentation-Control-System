@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define VERSION 0.84
+#define VERSION 0.87
 
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
@@ -48,18 +48,21 @@ String MQTT_BROKER = "192.168.178.120";              // MQTT-Broker
 String EXTERNAL_URL = "www.telekom.de";              // URL of external Website
 
 int CURR_TEMP = 0;
-float CURR_TEMP_F = 0;
-float ROOM_TEMP_F = 0;
+float CURR_TEMP_F = -11;
+float ROOM_TEMP_F = -11;
+float COMP_TEMP_F = -11;
 int TARGET_TEMP = 10;
 int TEMP_HYSTERESIS = 1;
+long COMP_RUNNING_TIME = 60;
+int COMP_TEMP_THRESHOLD = 50;
 int POWER_HEAT = 120;
 int POWER_COOL = 240;
 int POWER_IDLE = 10;
 
-boolean CONFIG_MODE = false;
-boolean SWITCH = true;                        // Enable Fermantaion Control
-boolean SHOW_COOL_DOWN = false;
-boolean SHOW_HEAT_UP = false;
+bool CONFIG_MODE = false;
+bool SWITCH = true;                        // Enable Fermantaion Control
+bool SHOW_COOL_DOWN = false;
+bool SHOW_HEAT_UP = false;
                        
 int currentButtonState = LOW;                 // the current reading from the input pin
 int lastButtonState = LOW;                    // the last reading from the input pin
@@ -68,11 +71,11 @@ unsigned long pressed_time = 0;
 int mqtt_publish_time = 45;                   // time in seconds for publishing MQTT message
 int mqtt_time_counter = 0;
 
-int cool_publish_time = 15;                   // time in seconds for cool switching
-int cool_time_counter = cool_publish_time;
-
+int comp_time_counter = COMP_RUNNING_TIME;    // time in seconds for cool switching
+long lastCompMillis = 0; 
 long lastMillis = 0;
-boolean FLAG = true;
+bool FLAG = true;
+bool pinChange = false;
 
 // ======================================================================
 // Initialize Objects
@@ -139,6 +142,8 @@ void loadConfig(){
         EXTERNAL_URL = ext_url.c_str();
         TARGET_TEMP = doc["TARGET_TEMP"];
         TEMP_HYSTERESIS = doc["TEMP_HYSTERESIS"];
+        COMP_RUNNING_TIME = doc["COMP_RUNNING_TIME"];
+        COMP_TEMP_THRESHOLD = doc["COMP_TEMP_THRESHOLD"];
         POWER_HEAT = doc["POWER_HEAT"];
         POWER_COOL = doc["POWER_COOL"];
         POWER_IDLE = doc["POWER_IDLE"];
@@ -187,6 +192,16 @@ void saveConfig(AsyncWebServerRequest *request) {
                 doc["TEMP_HYSTERESIS"] = TEMP_HYSTERESIS;
             }
 
+            if(p->name() == "COMP_RUNNING_TIME") { 
+                COMP_RUNNING_TIME = p->value().toInt(); 
+                doc["COMP_RUNNING_TIME"] = COMP_RUNNING_TIME; 
+            }
+
+            if(p->name() == "COMP_TEMP_THRESHOLD") { 
+                COMP_TEMP_THRESHOLD = p->value().toInt(); 
+                doc["COMP_TEMP_THRESHOLD"] = COMP_TEMP_THRESHOLD; 
+            }
+
             if(p->name() == "TARGET_TEMP") {
                 TARGET_TEMP = p->value().toInt();
                 doc["TARGET_TEMP"] = TARGET_TEMP;
@@ -228,6 +243,8 @@ void saveConfig() {
         doc["MQTT_BROKER"] = MQTT_BROKER;
         doc["EXTERNAL_URL"] = EXTERNAL_URL;
         doc["TEMP_HYSTERESIS"] = TEMP_HYSTERESIS;
+        doc["COMP_RUNNING_TIME"] = COMP_RUNNING_TIME;
+        doc["COMP_TEMP_THRESHOLD"] = COMP_TEMP_THRESHOLD;
         doc["TARGET_TEMP"] = TARGET_TEMP;
         doc["POWER_HEAT"] = POWER_HEAT;
         doc["POWER_COOL"] = POWER_COOL;
@@ -279,6 +296,18 @@ String processor(const String& var){
     if(var == "HOSTNAME"){ return HOSTNAME; }
     if(var == "EXTERNAL_URL"){ return EXTERNAL_URL; }
     if(var == "ROOM_TEMP"){  return String(ROOM_TEMP_F, 1);  }
+
+    if(var == "COMP_COLOR") {
+        if (COMP_TEMP_F < COMP_TEMP_THRESHOLD*0.8) {
+            return "green";
+        } else if (COMP_TEMP_F >= COMP_TEMP_THRESHOLD*0.8 && COMP_TEMP_F < COMP_TEMP_THRESHOLD) {
+            return "amber";
+        } else {
+            return "red";
+        }
+    }
+
+    if(var == "COMP_TEMP"){  return String(COMP_TEMP_F, 1);  }
     if(var == "TARGET_TEMP"){  return String(TARGET_TEMP);  }
     if(var == "FRIDGE_TEMP"){  return String(CURR_TEMP_F, 1);  }
   
@@ -312,7 +341,8 @@ String processor(const String& var){
     if(var == "WIFI_PW"){  return String(WIFI_PW);  }
     if(var == "MQTT_BROKER"){  return String(MQTT_BROKER);  }
     if(var == "TEMP_HYSTERESIS"){  return String(TEMP_HYSTERESIS);  }
-
+    if(var == "COMP_RUNNING_TIME"){  return String(COMP_RUNNING_TIME);  }
+    if(var == "COMP_TEMP_THRESHOLD"){  return String(COMP_TEMP_THRESHOLD);  }
     if(var == "POWER_HEAT"){  return String(POWER_HEAT);  }
     if(var == "POWER_COOL"){  return String(POWER_COOL);  }
     if(var == "POWER_IDLE"){  return String(POWER_IDLE);  }
@@ -452,11 +482,18 @@ void initDisplay() {
 
 void getTemp() {
   sensors.requestTemperatures();
-  float temp_fridge= sensors.getTempCByIndex(0);
-  if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; }
+  float temp_fridge = sensors.getTempCByIndex(0);
+  //if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; }
+  if (CURR_TEMP_F == -11 || temp_fridge > CURR_TEMP_F-3 && temp_fridge < CURR_TEMP_F+3)
+   { CURR_TEMP_F = temp_fridge;}
+
   
   float temp_room = sensors.getTempCByIndex(1);
-  if (temp_room > 0) { ROOM_TEMP_F = temp_room; }
+  //if (temp_room > 0) { ROOM_TEMP_F = temp_room; }
+  if (ROOM_TEMP_F == -11 || temp_room > ROOM_TEMP_F-3 && temp_room < ROOM_TEMP_F+3)
+   { ROOM_TEMP_F = temp_room;}
+
+
 }
 
 void publishMessage() {
@@ -487,8 +524,9 @@ void publishMessage() {
         StaticJsonDocument<256> doc;                            // build JSON object
         doc["sender"] = HOSTNAME;
         doc["target_temp"] = TARGET_TEMP;
-        doc["room_temp"] = int(ROOM_TEMP_F);
-        doc["fridge_temp"] = CURR_TEMP;
+        doc["room_temp"] = ROOM_TEMP_F;
+        doc["comp_temp"] = COMP_TEMP_F;
+        doc["fridge_temp"] = CURR_TEMP_F;
 
         int COOL_HEAT = 10;
         if(SHOW_COOL_DOWN) { COOL_HEAT = 0; }
@@ -502,6 +540,26 @@ void publishMessage() {
         display.print("*");
     } 
     display.display();
+}
+
+bool switchCompressor(boolean pinStateRequest) {
+    bool currentPinState = digitalRead(COOL_DOWN);
+    
+    if(pinStateRequest != currentPinState && !pinChange){
+        pinChange = true;
+        currentPinState = pinStateRequest; 
+        digitalWrite(COOL_DOWN, currentPinState); 
+        lastCompMillis = millis();  
+    }
+
+    long time_diff = millis() - lastCompMillis;
+    if (pinChange && time_diff > COMP_RUNNING_TIME*1000) {
+        pinChange = false;    
+    } 
+    
+    digitalWrite(COOL_DOWN, currentPinState); 
+    
+    return currentPinState;
 }
 
 
@@ -583,43 +641,42 @@ void loop() {
             SHOW_HEAT_UP = false;
         }
 
-        cool_time_counter = cool_publish_time;
+        comp_time_counter = COMP_RUNNING_TIME;
 
     } else {
         //publish a message roughly every five seconds.
         if ((millis() - lastMillis) > 1000) {
             lastMillis = millis();
 
-            getTemp();                                                      // get current Temperatures
+            getTemp(); 
+            CURR_TEMP = (int)round(CURR_TEMP_F);                                                     // get current Temperatures
 
             String info_text = "";
     
             if(SWITCH) {                                                    // Steuerung nur zulassen, wenn SWITCH = true      
                 
-                cool_time_counter = cool_time_counter + 1;
-                if(cool_time_counter > cool_publish_time) {                 // Kompressor nur alle 15 Sekunden ein- bzw. ausschalten
-                    cool_time_counter = 0;
+                comp_time_counter = comp_time_counter + 1;
+                if(comp_time_counter > COMP_RUNNING_TIME) {                 // Kompressor nur alle 60 Sekunden ein- bzw. ausschalten
+                    comp_time_counter = 0;
                 
-                    if (CURR_TEMP > TARGET_TEMP + TEMP_HYSTERESIS) {
-                        digitalWrite(COOL_DOWN, ON);
-                        info_text = "<COOL DOWN>";
-                        SHOW_COOL_DOWN = true;
-                    } else {
-                        digitalWrite(COOL_DOWN, OFF);
-                        SHOW_COOL_DOWN = false;
+                    if (!SHOW_COOL_DOWN) { 
+                        if (CURR_TEMP_F  > TARGET_TEMP + TEMP_HYSTERESIS) { 
+                            digitalWrite(COOL_DOWN, ON);
+                            //switchCompressor(ON); 
+                            SHOW_COOL_DOWN = true; } 
+                    } else { 
+                        if (CURR_TEMP_F <= TARGET_TEMP - TEMP_HYSTERESIS) {
+                            digitalWrite(COOL_DOWN, OFF);
+                            //switchCompressor(OFF); 
+                            SHOW_COOL_DOWN = false; } 
                     }
                 }
 
                 if (SHOW_COOL_DOWN) {
-                        info_text = "<COOL DOWN>";
-                    }
-                
-                //if (CURR_TEMP < TARGET_TEMP) {
-                //    digitalWrite(COOL_DOWN, OFF);
-                //    SHOW_COOL_DOWN = false;
-                //}
+                    info_text = "<COOL DOWN>";
+                }
 
-                if ((CURR_TEMP > 10) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS)) {
+                if ((CURR_TEMP > 10) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS + 1)) {
                     digitalWrite(HEAT_UP, ON);
                     info_text = "<HEAT UP>";
                     SHOW_HEAT_UP = true;
@@ -635,13 +692,12 @@ void loop() {
 
             } else {
                 info_text = "<OFF>";
-                //info_text = "ABCDEFGHIJK";
                 digitalWrite(COOL_DOWN, OFF);
                 SHOW_COOL_DOWN = false;
                 digitalWrite(HEAT_UP, OFF);
                 SHOW_HEAT_UP = false;
 
-                cool_time_counter = cool_publish_time;
+                comp_time_counter = COMP_RUNNING_TIME;
             }
 
             // Show Working mode on OLED
@@ -653,7 +709,6 @@ void loop() {
             display.print("C");
             display.setFont(&FreeMono9pt7b);
 
-            CURR_TEMP = (int)CURR_TEMP_F;
             int offset = ((127 - (info_text.length()*11))/2);
             display.setCursor(offset, 41);
             display.print(info_text);
