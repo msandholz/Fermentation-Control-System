@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define VERSION 0.87
+#define VERSION 0.88
 
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
@@ -482,17 +482,20 @@ void initDisplay() {
 
 void getTemp() {
   sensors.requestTemperatures();
-  float temp_fridge = sensors.getTempCByIndex(0);
+  float temp_fridge = sensors.getTempCByIndex(1);
   //if (temp_fridge > 0) { CURR_TEMP_F = temp_fridge; }
   if (CURR_TEMP_F == -11 || temp_fridge > CURR_TEMP_F-3 && temp_fridge < CURR_TEMP_F+3)
    { CURR_TEMP_F = temp_fridge;}
 
+  float temp_comp = sensors.getTempCByIndex(0);
+  //if (temp_room > 0) { ROOM_TEMP_F = temp_room; }
+  if (COMP_TEMP_F == -11 || temp_comp > COMP_TEMP_F-3 && temp_comp < COMP_TEMP_F+3)
+   { COMP_TEMP_F = temp_comp;}
   
-  float temp_room = sensors.getTempCByIndex(1);
+  float temp_room = sensors.getTempCByIndex(2);
   //if (temp_room > 0) { ROOM_TEMP_F = temp_room; }
   if (ROOM_TEMP_F == -11 || temp_room > ROOM_TEMP_F-3 && temp_room < ROOM_TEMP_F+3)
    { ROOM_TEMP_F = temp_room;}
-
 
 }
 
