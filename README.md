@@ -1,6 +1,14 @@
 # Fermentation-Control-System: Change Log
 
-## ToDo: Next Release (0.87): 
+## ToDo: Next Release (0.89): 
+
+## Release (0.88):
+- Add new heating algorythm
+    Line 51: `int ROOM_TEMP = 0;`
+    Line 657: `ROOM_TEMP = (int)round(ROOM_TEMP_F);`
+    Line 684:  `if ((ROOM_TEMP <= TARGET_TEMP) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS)) {`
+
+## Release (0.87): 
 - Heatprotection Compressor:
     Line  53: `float COMP_TEMP_F = -22;`
     Line 460: `float temp_comp = sensors.getTempCByIndex(2);`
@@ -32,7 +40,7 @@
   Line 351: `if(var == "COMP_TEMP_THRESHOLD"){  return String(COMP_TEMP_THRESHOLD);  }`
 
 
-## ToDo: Next Release (0.86):
+## Release (0.86):
 
 - Send Float-Values to Grafana:
   Line 490: `doc["room_temp"] = int(ROOM_TEMP_F);` --> `doc["room_temp"] = ROOM_TEMP_F;`
