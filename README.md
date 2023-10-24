@@ -1,6 +1,12 @@
 # Fermentation-Control-System: Change Log
 
-## ToDo: Next Release (0.89): 
+## ToDo: Next Release (1.0):
+- Re-Organize the code
+- Use LittleFS insteat of SPIFFS
+- Use new Version of ElegantOTA
+
+## Release (0.89):
+- Add calc.hmtl to do some brew related calculations 
 
 ## Release (0.88):
 - Add new heating algorythm
