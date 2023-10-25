@@ -4,7 +4,7 @@
 #include <PubSubClient.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h>
+#include <ElegantOTA.h>
 #include <Adafruit_SSD1306.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
 #include <Fonts/FreeMonoBold12pt7b.h>
@@ -12,11 +12,11 @@
 #include <RotaryEncoder.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
-#include <SPIFFS.h>
+#include <LittleFS.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define VERSION 0.88
+#define VERSION 1.0
 
 #define DEBUG_SERIAL false      // Enable debbuging over serial interface
 #define DEBUG_OLED true         // Enable debbuging over serial interface        
@@ -41,13 +41,14 @@
 // Setting parameters with default values
 // ======================================================================
 
-const char* WIFI_SSID = "1234";                      // WLAN-SSID
-const char* WIFI_PW = "1234";        // WLAN-Password
+const char* WIFI_SSID = "WLAN";                      // WLAN-SSID
+const char* WIFI_PW = "74696325262072177928";        // WLAN-Password
 String HOSTNAME = "ESP-32";                          // Enter Hostname here
 String MQTT_BROKER = "192.168.178.120";              // MQTT-Broker
 String EXTERNAL_URL = "www.telekom.de";              // URL of external Website
 
 int CURR_TEMP = 0;
+int ROOM_TEMP = 0;
 float CURR_TEMP_F = -11;
 float ROOM_TEMP_F = -11;
 float COMP_TEMP_F = -11;
@@ -110,13 +111,208 @@ unsigned long last_button_time = 0;
 // Functions
 // ======================================================================
 
+void loadConfig();
+void saveConfig(AsyncWebServerRequest *request);
+void saveConfig();
+void connectWifi();
+String processor(const String& var);
+void startWebServer();
+void initRelayBoard();
+void initRotaryEncoder();
+void initMQTTClient();
+void initDisplay();
+void getTemp();
+void publishMessage();
+bool switchCompressor(boolean pinStateRequest);
+
+
+void IRAM_ATTR isr() {
+    button_time = millis();
+    if (button_time - last_button_time > 250)
+    {
+        CONFIG_MODE = !CONFIG_MODE;
+        lastPos = -1;   
+        last_button_time = button_time;
+    }
+}
+
+// ======================================================================
+// Setup
+// ======================================================================
+void setup() {
+    if(DEBUG_SERIAL){
+        Serial.begin(115200);
+        Serial.println("Welcome to ESP-32!");
+    }
+    initDisplay();              // Initialize OLED Display
+    initRelayBoard();           // Initialize Relais Board
+    initRotaryEncoder();        // Intitalize RotaryEncoder
+    loadConfig();               // Loading Config from config.json
+    connectWifi();              // Initialize WiFi Connection
+    startWebServer();           // Starting WebServer
+    initMQTTClient();           // Initialize MQTT Client
+}
+
+// ======================================================================
+// Loop
+// ======================================================================
+void loop() {
+
+    currentButtonState = digitalRead(ROTARY_BUTTON);
+    if(currentButtonState == LOW && lastButtonState == HIGH) {
+        start_time = millis();
+        FLAG = true;
+    } else if (currentButtonState == LOW && lastButtonState == LOW && FLAG) {
+        pressed_time = millis();
+        long press_duration = pressed_time - start_time;
+        if(press_duration > BTN_PRESS_TIME) {
+            CONFIG_MODE = !CONFIG_MODE;
+            lastPos = -1;
+            FLAG = false;   
+        }
+    }
+    lastButtonState = currentButtonState;
+
+    if(CONFIG_MODE) {
+        encoder.tick();
+        int newPos = encoder.getPosition(); // get the current physical position and calc the logical position
+        
+        if (newPos < ROTARYMIN) {
+            encoder.setPosition(ROTARYMIN);
+            newPos = ROTARYMIN;
+        } else if (newPos > ROTARYMAX) {
+            encoder.setPosition(ROTARYMAX);
+            newPos = ROTARYMAX;
+        }
+
+        // Show Config mode on OLED
+        if (lastPos != newPos) { 
+
+            TARGET_TEMP = newPos;
+
+            display.clearDisplay();
+            display.setFont(&FreeMonoBold12pt7b);
+            display.setCursor(10, 14);
+            display.print("Target:");
+            display.setFont(&FreeMonoBold18pt7b);
+            display.setCursor(6, 50);
+            display.print(TARGET_TEMP);
+            display.print(" C  ");
+            display.display();
+
+            saveConfig();
+            lastPos = newPos;
+        }
+
+        if (CURR_TEMP < TARGET_TEMP) {
+            digitalWrite(COOL_DOWN, OFF);
+            SHOW_COOL_DOWN = false;
+        }
+        
+        if (CURR_TEMP > TARGET_TEMP) {
+            digitalWrite(HEAT_UP, OFF);
+            SHOW_HEAT_UP = false;
+        }
+
+        comp_time_counter = COMP_RUNNING_TIME;
+
+    } else {
+        //publish a message roughly every five seconds.
+        if ((millis() - lastMillis) > 1000) {
+            lastMillis = millis();
+
+            getTemp(); 
+            CURR_TEMP = (int)round(CURR_TEMP_F);
+            ROOM_TEMP = (int)round(ROOM_TEMP_F);                                                        // get current Temperatures
+
+            String info_text = "";
+    
+            if(SWITCH) {                                                    // Steuerung nur zulassen, wenn SWITCH = true      
+                
+                comp_time_counter = comp_time_counter + 1;
+                if(comp_time_counter > COMP_RUNNING_TIME) {                 // Kompressor nur alle 60 Sekunden ein- bzw. ausschalten
+                    comp_time_counter = 0;
+                
+                    if (!SHOW_COOL_DOWN) { 
+                        if (CURR_TEMP_F  > TARGET_TEMP + TEMP_HYSTERESIS) { 
+                            digitalWrite(COOL_DOWN, ON);
+                            //switchCompressor(ON); 
+                            SHOW_COOL_DOWN = true; } 
+                    } else { 
+                        if (CURR_TEMP_F <= TARGET_TEMP - TEMP_HYSTERESIS) {
+                            digitalWrite(COOL_DOWN, OFF);
+                            //switchCompressor(OFF); 
+                            SHOW_COOL_DOWN = false; } 
+                    }
+                }
+
+                if (SHOW_COOL_DOWN) {
+                    info_text = "<COOL DOWN>";
+                }
+
+                if ((ROOM_TEMP <= TARGET_TEMP) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS)) {                    digitalWrite(HEAT_UP, ON);
+                    info_text = "<HEAT UP>";
+                    SHOW_HEAT_UP = true;
+                } else {
+                    digitalWrite(HEAT_UP, OFF);
+                    SHOW_HEAT_UP = false;
+                }
+
+                //if (CURR_TEMP > TARGET_TEMP) {
+                //    digitalWrite(HEAT_UP, OFF);
+                //    SHOW_HEAT_UP = false;
+                //}
+
+            } else {
+                info_text = "<OFF>";
+                digitalWrite(COOL_DOWN, OFF);
+                SHOW_COOL_DOWN = false;
+                digitalWrite(HEAT_UP, OFF);
+                SHOW_HEAT_UP = false;
+
+                comp_time_counter = COMP_RUNNING_TIME;
+            }
+
+            // Show Working mode on OLED
+            display.clearDisplay();
+            display.setRotation(0);
+            display.setFont(&FreeMonoBold18pt7b);
+            display.setCursor(10, 22);
+            display.print(CURR_TEMP_F, 1);
+            display.print("C");
+            display.setFont(&FreeMono9pt7b);
+
+            int offset = ((127 - (info_text.length()*11))/2);
+            display.setCursor(offset, 41);
+            display.print(info_text);
+
+            display.setCursor(8, 60);
+            display.print("Target:");
+            display.print(TARGET_TEMP);
+            display.print("C");
+            display.display();
+            
+            mqtt_time_counter = mqtt_time_counter + 1;
+            if(mqtt_time_counter > mqtt_publish_time) {
+                mqtt_time_counter = 0;
+                if(WiFi.status() != WL_CONNECTED) { connectWifi(); }
+                publishMessage();
+            }
+        }
+    }
+}
+
+// ======================================================================
+// Functions
+// ======================================================================
+
 void loadConfig(){
-    if (!SPIFFS.begin(true)) { 
-        if(DEBUG_SERIAL){Serial.print("! An error occurred during SPIFFS mounting !");}
+    if (!LittleFS.begin(true)) { 
+        if(DEBUG_SERIAL){Serial.print("! An error occurred during LittleFS mounting !");}
         return; 
     }
 
-    File config = SPIFFS.open("/config.json","r");
+    File config = LittleFS.open("/config.json","r");
 
     if(config) { 
         // Deserialize the JSON document
@@ -157,12 +353,12 @@ void loadConfig(){
 }
 
 void saveConfig(AsyncWebServerRequest *request) {
-    if (!SPIFFS.begin(true)) { 
-        if(DEBUG_SERIAL){Serial.print("!An error occurred during SPIFFS mounting!");}
+    if (!LittleFS.begin(true)) { 
+        if(DEBUG_SERIAL){Serial.print("!An error occurred during LittleFS mounting!");}
         return; 
     }
 
-    File config = SPIFFS.open("/config.json","w");
+    File config = LittleFS.open("/config.json","w");
 
     if(config) { 
         // Serialize the JSON document
@@ -229,12 +425,12 @@ void saveConfig(AsyncWebServerRequest *request) {
 }
 
 void saveConfig() {
- if (!SPIFFS.begin(true)) { 
-        if(DEBUG_SERIAL){Serial.print("!An error occurred during SPIFFS mounting!");}
+ if (!LittleFS.begin(true)) { 
+        if(DEBUG_SERIAL){Serial.print("!An error occurred during LittleFS mounting!");}
         return; 
     }
 
-    File config = SPIFFS.open("/config.json","w");
+    File config = LittleFS.open("/config.json","w");
 
     if(config) { 
         // Serialize the JSON document
@@ -354,20 +550,20 @@ String processor(const String& var){
 
 void startWebServer(){
     // start OTA WebServer
-    AsyncElegantOTA.begin(&server);
+    ElegantOTA.begin(&server);
     server.begin();
     if(DEBUG_SERIAL){Serial.println("OTA WebServer started!");}
 
     // Make index.html available
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
         if(DEBUG_SERIAL){Serial.println("Requested index.html page");}
-        request->send(SPIFFS, "/index.html", String(), false, processor);
+        request->send(LittleFS, "/index.html", String(), false, processor);
     });
 
     // Make config.html available
     server.on("/config", HTTP_GET, [](AsyncWebServerRequest *request){
         if(DEBUG_SERIAL){Serial.println("Requested config.html page");}
-        request->send(SPIFFS, "/config.html", String(), false, processor);
+        request->send(LittleFS, "/config.html", String(), false, processor);
     });
 
     // Save config-parameters
@@ -380,12 +576,18 @@ void startWebServer(){
     // Make check.html available
     server.on("/check", HTTP_GET, [](AsyncWebServerRequest *request){
         if(DEBUG_SERIAL){Serial.println("Requested check.html page");}
-        request->send(SPIFFS, "/check.html", String(), false, processor);
+        request->send(LittleFS, "/check.html", String(), false, processor);
+    });
+
+    // Make calc.html available
+    server.on("/calc", HTTP_GET, [](AsyncWebServerRequest *request){
+        if(DEBUG_SERIAL){Serial.println("Requested calc.html page");}
+        request->send(LittleFS, "/calc.html", String(), false, processor);
     });
 
     // Make style.css available
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(SPIFFS, "/style.css","text/css");
+        request->send(LittleFS, "/style.css","text/css");
     });
 
     // Enable / Disbale Fermentation Control
@@ -425,16 +627,6 @@ void initRelayBoard() {
     if(DEBUG_OLED){
         display.println("-Relay OK");
         display.display();
-    }
-}
-
-void IRAM_ATTR isr() {
-    button_time = millis();
-    if (button_time - last_button_time > 250)
-    {
-        CONFIG_MODE = !CONFIG_MODE;
-        lastPos = -1;   
-        last_button_time = button_time;
     }
 }
 
@@ -563,171 +755,4 @@ bool switchCompressor(boolean pinStateRequest) {
     digitalWrite(COOL_DOWN, currentPinState); 
     
     return currentPinState;
-}
-
-
-// ======================================================================
-// Setup
-// ======================================================================
-void setup() {
-    if(DEBUG_SERIAL){
-        Serial.begin(115200);
-        Serial.println("Welcome to ESP-32!");
-    }
-    initDisplay();              // Initialize OLED Display
-    initRelayBoard();           // Initialize Relais Board
-    initRotaryEncoder();        // Intitalize RotaryEncoder
-    loadConfig();               // Loading Config from config.json
-    connectWifi();              // Initialize WiFi Connection
-    startWebServer();           // Starting WebServer
-    initMQTTClient();           // Initialize MQTT Client
-}
-
-// ======================================================================
-// Loop
-// ======================================================================
-void loop() {
-
-    currentButtonState = digitalRead(ROTARY_BUTTON);
-    if(currentButtonState == LOW && lastButtonState == HIGH) {
-        start_time = millis();
-        FLAG = true;
-    } else if (currentButtonState == LOW && lastButtonState == LOW && FLAG) {
-        pressed_time = millis();
-        long press_duration = pressed_time - start_time;
-        if(press_duration > BTN_PRESS_TIME) {
-            CONFIG_MODE = !CONFIG_MODE;
-            lastPos = -1;
-            FLAG = false;   
-        }
-    }
-    lastButtonState = currentButtonState;
-
-    if(CONFIG_MODE) {
-        encoder.tick();
-        int newPos = encoder.getPosition(); // get the current physical position and calc the logical position
-        
-        if (newPos < ROTARYMIN) {
-            encoder.setPosition(ROTARYMIN);
-            newPos = ROTARYMIN;
-        } else if (newPos > ROTARYMAX) {
-            encoder.setPosition(ROTARYMAX);
-            newPos = ROTARYMAX;
-        }
-
-        // Show Config mode on OLED
-        if (lastPos != newPos) { 
-
-            TARGET_TEMP = newPos;
-
-            display.clearDisplay();
-            display.setFont(&FreeMonoBold12pt7b);
-            display.setCursor(10, 14);
-            display.print("Target:");
-            display.setFont(&FreeMonoBold18pt7b);
-            display.setCursor(6, 50);
-            display.print(TARGET_TEMP);
-            display.print(" C  ");
-            display.display();
-
-            saveConfig();
-            lastPos = newPos;
-        }
-
-        if (CURR_TEMP < TARGET_TEMP) {
-            digitalWrite(COOL_DOWN, OFF);
-            SHOW_COOL_DOWN = false;
-        }
-        
-        if (CURR_TEMP > TARGET_TEMP) {
-            digitalWrite(HEAT_UP, OFF);
-            SHOW_HEAT_UP = false;
-        }
-
-        comp_time_counter = COMP_RUNNING_TIME;
-
-    } else {
-        //publish a message roughly every five seconds.
-        if ((millis() - lastMillis) > 1000) {
-            lastMillis = millis();
-
-            getTemp(); 
-            CURR_TEMP = (int)round(CURR_TEMP_F);                                                     // get current Temperatures
-
-            String info_text = "";
-    
-            if(SWITCH) {                                                    // Steuerung nur zulassen, wenn SWITCH = true      
-                
-                comp_time_counter = comp_time_counter + 1;
-                if(comp_time_counter > COMP_RUNNING_TIME) {                 // Kompressor nur alle 60 Sekunden ein- bzw. ausschalten
-                    comp_time_counter = 0;
-                
-                    if (!SHOW_COOL_DOWN) { 
-                        if (CURR_TEMP_F  > TARGET_TEMP + TEMP_HYSTERESIS) { 
-                            digitalWrite(COOL_DOWN, ON);
-                            //switchCompressor(ON); 
-                            SHOW_COOL_DOWN = true; } 
-                    } else { 
-                        if (CURR_TEMP_F <= TARGET_TEMP - TEMP_HYSTERESIS) {
-                            digitalWrite(COOL_DOWN, OFF);
-                            //switchCompressor(OFF); 
-                            SHOW_COOL_DOWN = false; } 
-                    }
-                }
-
-                if (SHOW_COOL_DOWN) {
-                    info_text = "<COOL DOWN>";
-                }
-
-                if ((CURR_TEMP > 10) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS + 1)) {
-                    digitalWrite(HEAT_UP, ON);
-                    info_text = "<HEAT UP>";
-                    SHOW_HEAT_UP = true;
-                } else {
-                    digitalWrite(HEAT_UP, OFF);
-                    SHOW_HEAT_UP = false;
-                }
-
-                //if (CURR_TEMP > TARGET_TEMP) {
-                //    digitalWrite(HEAT_UP, OFF);
-                //    SHOW_HEAT_UP = false;
-                //}
-
-            } else {
-                info_text = "<OFF>";
-                digitalWrite(COOL_DOWN, OFF);
-                SHOW_COOL_DOWN = false;
-                digitalWrite(HEAT_UP, OFF);
-                SHOW_HEAT_UP = false;
-
-                comp_time_counter = COMP_RUNNING_TIME;
-            }
-
-            // Show Working mode on OLED
-            display.clearDisplay();
-            display.setRotation(0);
-            display.setFont(&FreeMonoBold18pt7b);
-            display.setCursor(10, 22);
-            display.print(CURR_TEMP_F, 1);
-            display.print("C");
-            display.setFont(&FreeMono9pt7b);
-
-            int offset = ((127 - (info_text.length()*11))/2);
-            display.setCursor(offset, 41);
-            display.print(info_text);
-
-            display.setCursor(8, 60);
-            display.print("Target:");
-            display.print(TARGET_TEMP);
-            display.print("C");
-            display.display();
-            
-            mqtt_time_counter = mqtt_time_counter + 1;
-            if(mqtt_time_counter > mqtt_publish_time) {
-                mqtt_time_counter = 0;
-                if(WiFi.status() != WL_CONNECTED) { connectWifi(); }
-                publishMessage();
-            }
-        }
-    }
 }

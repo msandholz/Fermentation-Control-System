@@ -147,3 +147,8 @@
   #green {color:#26b34b;}
   #amber {color:#ee9a1b;}
   #red {color:#ee1b24;}
+
+  .box {
+    border-width: 1px;
+    border-style: solid;
+  }
