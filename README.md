@@ -4,6 +4,7 @@
 - Re-Organize the code
 - Use LittleFS insteat of SPIFFS
 - Use new Version of ElegantOTA
+- Implement favicon 
 
 ## Release (0.89):
 - Add calc.hmtl to do some brew related calculations 
