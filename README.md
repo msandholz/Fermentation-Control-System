@@ -1,5 +1,8 @@
 # Fermentation-Control-System: Change Log
 
+ESP32 D1 Mini NodeMCU (https://docs.platformio.org/en/latest/boards/espressif32/wemos_d1_mini32.html)
+
+
 ## ToDo: Next Release (1.0):
 - Re-Organize the code
 - Use LittleFS insteat of SPIFFS
