@@ -21,6 +21,27 @@ if( COMP_TEMP > COMP_TEMP_THRESHOLD ) {
      SWITCH = false; }
 ```
 - Insert +/- Button on index.html to config target time
+```CSS
+.big-button{
+  font-size: 24px;
+  width: 50px;
+  height: 50px;
+  background-color: #04AA6D;
+  border: 3px solid #04AA6D;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+  margin: 2px 2px;
+  cursor: pointer;
+}
+
+.big-button:active {
+  color: #04AA6D;
+  background-color: white;
+  border: 3px solid #04AA6D;
+}
+```
+
 ```html
 <script>
      function callRestAPI() {          
