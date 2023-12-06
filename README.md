@@ -15,9 +15,8 @@ if( ( xOneShotTimer != NULL ) && ( xAutoReloadTimer != NULL ) ) {
 ```
 - Commpressor overheat deactivation
 ```C
-int COMP_TEMP = 0;
 void loop() { ...
-if( COMP_TEMP > COMP_TEMP_THRESHOLD ) { 
+if( (int)round(COMP_TEMP_F) > COMP_TEMP_THRESHOLD ) { 
      SWITCH = false; }
 ```
 - Insert +/- Button on index.html to config target time
