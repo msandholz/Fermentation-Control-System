@@ -22,7 +22,7 @@ if( COMP_TEMP > COMP_TEMP_THRESHOLD ) {
 ```
 - Insert +/- Button on index.html to config target time
 ```CSS
-.big-button{
+.big-button {
   font-size: 24px;
   width: 50px;
   height: 50px;
