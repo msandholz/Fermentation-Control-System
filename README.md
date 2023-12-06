@@ -20,7 +20,47 @@ void loop() { ...
 if( COMP_TEMP > COMP_TEMP_THRESHOLD ) { 
      SWITCH = false; }
 ```
-- test
+- Insert +/- Button on index.html to config target time
+```html
+<script>
+     function callRestAPI() {          
+          const xhttp = new XMLHttpRequest();
+          const url = "/getdata?TARGET_TEMP=" + document.getElementById("TARGET_TEMP").value + "&TARGET_TIME=" + document.getElementById("TARGET_TIME").value;
+          xhttp.onreadystatechange = function() { if (xhttp.readyState == 4 && xhttp.readyState == 200) { callback(xhttp.responseText); } }
+          
+          xhttp.open("GET", url, true);
+          xhttp.send();
+     }
+     function TargetCount(updown) {
+	       var value = document.getElementById("TARGET_TEMP").value;
+            if (updown == "+"){
+                if(value < 25) { value++; }
+            } else {
+                if(value > 1) { value--; }
+            }
+ 	       document.getElementById("TARGET_TEMP").value = value;
+            callRestAPI();
+        }
+</script>
+...
+<tr>
+     <td class="txt_center"><b>Target Temp [&deg;C]:</b></td>
+</tr>
+<tr>
+     <td>
+          <input class="big-button" type="submit" value="-" onclick="javascript:TempCount('-')">
+          <input class="big-font" type="number" min="20" max="99" size="4" name="TARGET_TEMP" id="TARGET_TEMP" value="%TARGET_TEMP%" onchange="javascript:callRestAPI()">
+          <input class="big-button" type="submit" value="+" onclick="javascript:TempCount('+')">
+      </td>
+</tr>
+```
+
+```c
+int COMP_TEMP = 0;
+void loop() { ...
+if( COMP_TEMP > COMP_TEMP_THRESHOLD ) { 
+     SWITCH = false; }
+```
 
 
 
