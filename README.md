@@ -3,8 +3,18 @@
 - Platform.ini: https://docs.platformio.org/en/latest/boards/espressif32/wemos_d1_mini32.html
 - Pinout: https://cdn.shopify.com/s/files/1/1509/1638/files/D1_Mini_ESP32_-_pinout.pdf?v=1604068668
 
+## ToDo: Next Release (1.5):
 
-## ToDo: Next Release (1.0):
+- Start Timers immediately
+  `if( ( xOneShotTimer != NULL ) && ( xAutoReloadTimer != NULL ) ) { `
+   `  // Start the software timers, using a block time of 0 (no block time). `
+    `  xTimer1Started = xTimerStart( xOneShotTimer, 0 ); `
+    `  xTimer2Started = xTimerStart( xAutoReloadTimer, 0 ); `
+ `} `
+
+
+
+## Next Release (1.0):
 - Re-Organize the code
 - Use LittleFS insteat of SPIFFS
 - Use new Version of ElegantOTA
