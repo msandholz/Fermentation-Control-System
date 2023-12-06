@@ -11,8 +11,8 @@
      // Start the software timers, using a block time of 0 (no block time). 
      xTimer1Started = xTimerStart( xOneShotTimer, 0 ); 
      xTimer2Started = xTimerStart( xAutoReloadTimer, 0 ); 
- } 
- ```
+ }  ```
+
 - test
 
 
