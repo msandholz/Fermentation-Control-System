@@ -7,6 +7,7 @@
 
 - Start Timers immediately
 ```c
+void setup() { ...
 if( ( xOneShotTimer != NULL ) && ( xAutoReloadTimer != NULL ) ) { 
      // Start the software timers, using a block time of 0 (no block time). 
      xTimer1Started = xTimerStart( xOneShotTimer, 0 ); 
@@ -15,6 +16,7 @@ if( ( xOneShotTimer != NULL ) && ( xAutoReloadTimer != NULL ) ) {
 - Commpressor overheat deactivation
 ```c
 int COMP_TEMP = 0;
+void loop() { ...
 if( COMP_TEMP > COMP_TEMP_THRESHOLD ) { 
      SWITCH = false; }
 ```
