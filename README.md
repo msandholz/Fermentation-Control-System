@@ -12,7 +12,12 @@ if( ( xOneShotTimer != NULL ) && ( xAutoReloadTimer != NULL ) ) {
      xTimer1Started = xTimerStart( xOneShotTimer, 0 ); 
      xTimer2Started = xTimerStart( xAutoReloadTimer, 0 ); }
 ```
-- test
+- Commpressor overheat deactivation
+```c
+int COMP_TEMP = 0;
+if( COMP_TEMP > COMP_TEMP_THRESHOLD ) { 
+     SWITCH = false; }
+```
 
 
 
