@@ -14,7 +14,7 @@ if( ( xOneShotTimer != NULL ) && ( xAutoReloadTimer != NULL ) ) {
      xTimer2Started = xTimerStart( xAutoReloadTimer, 0 ); }
 ```
 - Commpressor overheat deactivation
-```c
+```C
 int COMP_TEMP = 0;
 void loop() { ...
 if( COMP_TEMP > COMP_TEMP_THRESHOLD ) { 
@@ -96,9 +96,11 @@ if( COMP_TEMP > COMP_TEMP_THRESHOLD ) {
 
 ## Release (0.88):
 - Add new heating algorythm
+```C
     Line 51: `int ROOM_TEMP = 0;`
     Line 657: `ROOM_TEMP = (int)round(ROOM_TEMP_F);`
     Line 684:  `if ((ROOM_TEMP <= TARGET_TEMP) && (CURR_TEMP < TARGET_TEMP - TEMP_HYSTERESIS)) {`
+```
 
 ## Release (0.87): 
 - Heatprotection Compressor:
