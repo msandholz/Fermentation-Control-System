@@ -6,7 +6,7 @@
 ## ToDo: Next Release (1.5):
 
 - Start Timers immediately
-  ```
+  ```c
   if( ( xOneShotTimer != NULL ) && ( xAutoReloadTimer != NULL ) ) { 
      // Start the software timers, using a block time of 0 (no block time). 
      xTimer1Started = xTimerStart( xOneShotTimer, 0 ); 
