@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>  
+    <title>%HOSTNAME%</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+        function init() {
+            calc_pressure();
+            Brix2Plato();
+            CorrectPlato();
+            calc_alcohol();
+        }
+        
+        function select_co2() {
+            var co2 = parseFloat(document.getElementById("beer").value);
+            document.getElementById("co2").value = co2;
+            calc_pressure();
+        }
+
+        // calculate co2 pressure
+        function calc_pressure() {
+            var temp = parseFloat(document.getElementById("temp").value);
+            var co2 = parseFloat(document.getElementById("co2").value) / 10.0;
+            //var pressure = temp + co2;
+            var pressure = co2 / Math.pow(Math.E, -10.73797 + (2617.25 / (temp + 273.15)))- 1.013;
+            
+            document.getElementById("pressure").innerHTML = pressure.toFixed(1);
+        }
+        
+        // transform Brix to Plato
+        function Brix2Plato() {
+	        var brix = document.getElementById("brix").value;
+            var plato = brix * 0.962;
+	        document.getElementById("plato").innerHTML = plato.toFixed(1);
+            CorrectPlato();
+        }
+
+        // Temperaturkorrektur Plato
+        function CorrectPlato() {
+	        var plato = parseFloat(document.getElementById("plato").innerHTML);
+	        var temp_plato = parseFloat(document.getElementById("temp_plato").value);
+ 
+            var tempfactor = plato * (1.00130346 / (1 + 0.0038661 * (temp_plato - 20)));
+   
+   	        document.getElementById("result").innerHTML = tempfactor.toFixed(1);
+        }
+        
+        // calc alcohol
+        function calc_alcohol() {
+            var SW = document.getElementById("SW_Brix").value;
+            var BIa = SW/1.03;
+            var BIe = document.getElementById("JB_Brix").value/1.03;
+            
+            document.getElementById("SW_Plato").innerHTML = "(=" + BIa.toFixed(1) + " °P)";
+            document.getElementById("JB_Plato").innerHTML = "(=" + BIe.toFixed(1) + " °P)";
+            
+            // Spezifische Dichte
+            var SG = 1-0.00085683*BIa+0.0034941*BIe;
+            
+            // Scheinbarer Restextrakt
+            var SRE = 668.72*SG-463.37-205.347*SG*SG;
+            document.getElementById("SRE").innerHTML = SRE.toFixed(1);
+            
+            // Tatsächlicher Restextrakt
+            var TRE =  0.1808*BIa+0.8192*SRE;
+            document.getElementById("TRE").innerHTML = TRE.toFixed(1);
+            
+            // Scheinbarer Endvergärungsgrad
+            var SEVG = (1-SRE/BIa)*100;
+            document.getElementById("SEVG").innerHTML = SEVG.toFixed(1);
+            
+            // Tatsächlicher Endvergärungsgrad
+            var TEVG = (1-TRE/BIa)*100;
+            document.getElementById("TEVG").innerHTML = TEVG.toFixed(1);
+            
+            // Alkohol
+            var v_alc = 1/0.79*(BIa-TRE)/(2.0665-0.010665*BIa);
+            document.getElementById("v_alc").innerHTML = v_alc.toFixed(1);
+        }
+    </script>
+</head>
+
+<body onload="init()">
+    <div class="topnav">
+        <a href="/"><i class="fa-solid fa-house-chimney" style="font-size:36px"></i></a>
+        <a href="/calc"><i class="fa-solid fa-calculator" style="font-size:36px"></i></a>
+        <a href="%EXTERNAL_URL%" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
+        <a href="/config"><i class="fa-solid fa-gear" style="font-size:36px;"></i></a>
+        <a href="/check"><i class="fa-solid fa-list-check" style="font-size:36px"></i></a>
+        <a href="/update" target="_blank"><i class="fa-solid fa-upload" style="font-size:36px"></i></a>
+    </div>
+      
+    <div class="row">
+        <center>
+        <h2>Brau Kalkulation</h2>
+        <div class="box">
+            <h3>Spunddruck- und CO<sub>2</sub>-Rechner:</h3>
+            <form name="f_pressure">
+            <table style="border-style:none;">
+                <tbody>
+                    <tr>
+                        <td><label for="beer">Biertyp:</label></td>
+                        <td><select id="beer" onchange="javascript:select_co2()" name="beer">
+                              <option value="5.0">Altbier</option>
+                              <option value="5.0">Ale</option>
+                              <option value="5.0">Bockbier</option>
+                              <option value="7.0">Dinkelbier</option>
+                              <option value="5.5">Kölsch</option>
+                              <option value="5.5">Lager</option>
+                              <option value="5.0">Porter</option>
+                              <option value="6.0">Roggenbier</option>
+                              <option value="4.0">Stout</option>
+                              <option value="7.0">Weizenbier</option>
+                              <option value="4.9">Export</option>
+                              <option value="5.0">Maibock</option>
+                              <option value="5.0">Märzenbier</option>
+                              <option value="5.5">Pilsener</option>
+                              <option value="5.0">Schwarzbier</option>
+                            </select> 
+                        </td>
+                    </tr><tr>
+                        <td>Gewünschter CO<sub>2</sub>-Gehalt (g/Liter):</td>
+                        <td><input type="number" name="co2" id="co2" value="5" size="5" onchange="javascript:calc_pressure()"></td>
+                    </tr><tr>
+                        <td>Temperatur (°C):</td>
+                        <td><input type="number" name="temp" id="temp" value="7" size="5" onchange="javascript:calc_pressure()"></td>
+                    </tr><tr>
+                        <td>Benötigter Druck (bar)</td>
+                        <td><b><div id="pressure">...</div></b></td>
+                    </tr>
+                </tbody>
+            </table>
+            </form>
+        </div>
+        <br>
+        <div class="box">
+            <h3>Refraktometerrechner (Terrill-Fomel)</h3>
+            <form name="f_alcohol">
+              <table style="border-style:none;">
+                <tbody><tr>
+                <td>Stammwürze (Brix):</td>
+                <td><input type="number" name="SW_Brix" id="SW_Brix" value="12" size="5" onchange="javascript:calc_alcohol()"></td>
+                <td><div id="SW_Plato">N/A</div></td>
+                </tr><tr>
+                <td>Jungbier (Brix):</td>
+                <td><input type="number" name="JB_Brix" id="JB_Brix" value="2.5" size="5" onchange="javascript:calc_alcohol()"></td>
+                <td><div id="JB_Plato">N/A</div></td>
+                </tr>
+                <tr>
+                <td>Scheinbarer Restextrakt (SRE):</td>
+                <td><b><div id="SRE">N/A</div></b></td>
+                <td>°Plato</td>             
+                </tr>
+                <tr>
+                <td>Tatsächlicher Restextrakt (TRE):</td>
+                <td><b><div id="TRE">N/A</div></b></td>
+                <td>&#37;</td>
+                </tr>
+                <tr>
+                <td>Scheinbarer Endvergärungsgrad:</td>
+                <td><b><div id="SEVG">N/A</div></b></td>
+                <td>&#37;</td>             
+                </tr>
+                <tr>
+                <td>Tatsächliche Endvergärungsgrad:</td>
+                <td><b><div id="TEVG">N/A</div></b></td>
+                <td>&#37;</td>
+                </tr>
+                <tr>
+                <td>Alkoholgehalt (Vol. &#37;):</td>
+                <td><b><div id="v_alc">N/A</div></b></td>
+                <td>&#37;</td>
+                </tr>
+              </tbody></table>
+            </form>
+        </div>
+                <div class="box">
+            <h3>Umrechnung von Brix nach Plato</h3>
+            <form name="f_density">
+            
+                <table style="border-style:none;">
+                    <tbody><tr>
+                        <td>Gemessene Stammwürze (°Brix)</td>
+                        <td><input type="number" name="density_input" id="brix" value="12.47" size="5" onchange="javascript:Brix2Plato()"></td>
+                    </tr>
+                    <tr>
+                      <td>Gemessene Stammwürze (°Plato):</td>
+                      <td><b><div id="plato">...</div></b></td>
+                    </tr>
+                    <tr>
+                        <td>Gemessene Temperatur (°C):</td>
+                        <td><input type="number" name="temp" id="temp_plato" value="20" size="5" onchange="javascript:CorrectPlato()"></td>
+                    </tr>
+                    <tr>
+                        <td>Tatsächliche Stammwürze (°Plato):</td>
+                        <td><b><div type="text" name="wort" id="result">...</div></b></td>
+                    </tr>
+                </tbody></table>
+            </form>
+        </div>
+        <br>
+        </center><br>
+    </div>
+    <div class="footer">&copy; by Sandholz Engineering (Version: %VERSION%)</div>
+</body>
+</html>
