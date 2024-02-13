@@ -9,6 +9,14 @@
 
 ## ToDo: Next Release (1.5):
 
+
+
+## Release (1.6 - 1.9):
+- Bugfixing
+
+
+## Release (1.5):
+
 - Start Timers immediately
 ```c
 void setup() { ...
