@@ -20,12 +20,25 @@ setInterval(fetchData, 5000); // Daten alle 5 Sekunden abrufen
 
 <script>
         const url = new URL('https://example.com/api');
-        const params = { param1: 'wert1', param2: 'wert2' };
+        const params = { 
+            param1: 'wert1', 
+            param2: 'wert2',
+            param3: 'true'
+        };
 
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
         fetch(url)
             .then(response => response.json())
-            .then(data => console.log('Erfolg:', data))
+            .then(data => console.log('Erfolg:', data)
+                document.getElementById('temp').innerText = data.temperature;
+                document.getElementById('hum').innerText = data.humidity;
+                document.getElementById('temp').innerText = data.temperature;
+                document.getElementById('hum').innerText = data.humidity;
+                document.getElementById('temp').innerText = data.temperature;
+                document.getElementById('hum').innerText = data.humidity;
+                document.getElementById('temp').innerText = data.temperature;
+                document.getElementById('hum').innerText = data.humidity;
+            )
             .catch(error => console.log('Fehler:', error));
 </script>
