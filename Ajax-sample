@@ -16,3 +16,16 @@ function fetchData() {
 }
 setInterval(fetchData, 5000); // Daten alle 5 Sekunden abrufen
 </script>
+
+
+<script>
+        const url = new URL('https://example.com/api');
+        const params = { param1: 'wert1', param2: 'wert2' };
+
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => console.log('Erfolg:', data))
+            .catch(error => console.log('Fehler:', error));
+</script>
