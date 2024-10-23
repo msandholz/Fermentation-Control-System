@@ -7,24 +7,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <script>
-     	function setData(){
+     	function data(){
         
-        	    document.getElementById('switch').checked = true;
-                document.getElementById('power_consumption').innerText = "50 Watt";
-                document.getElementById('room_temp').innerText = "10 °C";
+        	const url = new URL('https://example.com/api');
+        	const params = { 
+            	param1: document.getElementById('target_temp').value, 
+            	param2: document.getElementById('target_co2').value,
+            	param3: document.getElementById('switch').checked
+        	};
+   
+   
+        	document.getElementById('switch').checked = true;
+            document.getElementById('target_temp').value = 20;
+            document.getElementById('target_co2').value = 7,2;
+
+			document.getElementById('power_consumption').innerText = "50 Watt";
+            document.getElementById('room_temp').innerText = "10 °C";
                 
-                const c_temp = document.getElementById('comp_temp');
-                	c_temp.innerText = "20 °C";
-                    c_temp.style.color = "red";
-                    
+            const c_temp = document.getElementById('comp_temp');
+                c_temp.innerText = "20 °C";
+                c_temp.style.color = "red";
+                 
+            document.getElementById('beer_temp').innerText = "40 °C";
+            document.getElementById('fridge_temp').innerText = "50 °C";
                 
-                document.getElementById('target_temp').innerText = "30 °C";
-                document.getElementById('beer_temp').innerText = "40 °C";
-                document.getElementById('fridge_temp').innerText = "50 °C";
-                
-                const heatup = "<i class='fa-solid fa-temperature-arrow-up' style='font-size:24px;color:orange'></i>";
-                const cooldown = "<i class='fa-solid fa-temperature-arrow-down' style='font-size:24px;color:blue'></i>";
-        		document.getElementById('cool_heat_status').innerHTML = cooldown;
+           	const ch_status = document.getElementById('cool_heat_status');
+            
+                ch_status.style.color = "orange"; 
+                ch_status.classList.add('fa-temperature-arrow-up');
+                ch_status.style.color = "blue"; 
+                ch_status.classList.add('fa-temperature-arrow-down');
+            
         }
     
     	
@@ -50,33 +63,38 @@
             <tr>
                 <td class="right">Switch:</td>
                 <td><label class="switch">
-                    <input id="switch" type="checkbox" onClick=setData()>
+                    <input id="switch" type="checkbox" onClick=data()>
                     <span class="slider round"></span>
                 </label></td>
             </tr>
             <tr>
+                <td class="right">Target Temp:</td>
+                <td><input type="number" id="target_temp" value=10></td>
+            </tr>
+            <tr>
+                <td class="right">Target CO2:</td>
+                <td><input type="number" id="target_co2" value=5.5></td>
+            </tr>
+            <tr>
                 <td class="right">Power Consumption:</td>
-                <td><strong id="power_consumption"> %POWER_CONSUMPTION% Watt</strong></td>
+                <td><strong id="power_consumption"/></td>
             </tr>
             <tr>
                 <td class="right">Room Temp:</td>
-                <td><strong id="room_temp">%ROOM_TEMP% &deg;C</strong></td>
+                <td><strong id="room_temp"/></td>
             </tr>
             <tr>
                 <td class="right">Compressor Temp:</td>
-                <td><strong id="comp_temp">%COMP_TEMP% &deg;C</strong></td>
+                <td><strong id="comp_temp"/></td>
             </tr>
+
             <tr>
-                <td class="right">Target Temp:</td>
-                <td><strong id="target_temp">%TARGET_TEMP% &deg;C</strong></td>
-            </tr>
-            <tr>
-                <td class="right">Compressor Temp:</td>
-                <td><strong id="beer_temp">%COMP_TEMP% &deg;C</strong></td>
+                <td class="right">Beer Temp:</td>
+                <td><strong id="beer_temp"/></td>
             </tr>
             <tr class="row_center">
                 <td class="right">Current Temp:</td>
-                <td><strong id="fridge_temp"> %FRIDGE_TEMP% &deg;C  </strong><p id="cool_heat_status"></p></td>
+                <td><strong id="fridge_temp"></strong>&nbsp;&nbsp;<i id="cool_heat_status" class='fa-solid' style='font-size:24px;'></i></td>
             </tr>
             </table>
         </center><br>
