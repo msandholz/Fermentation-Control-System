@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>%HOSTNAME%</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+     	function setData(){
+        
+        	    document.getElementById('switch').checked = true;
+                document.getElementById('power_consumption').innerText = "50 Watt";
+                document.getElementById('room_temp').innerText = "10 °C";
+                
+                const c_temp = document.getElementById('comp_temp');
+                	c_temp.innerText = "20 °C";
+                    c_temp.style.color = "red";
+                    
+                
+                document.getElementById('target_temp').innerText = "30 °C";
+                document.getElementById('beer_temp').innerText = "40 °C";
+                document.getElementById('fridge_temp').innerText = "50 °C";
+                
+                const heatup = "<i class='fa-solid fa-temperature-arrow-up' style='font-size:24px;color:orange'></i>";
+                const cooldown = "<i class='fa-solid fa-temperature-arrow-down' style='font-size:24px;color:blue'></i>";
+        		document.getElementById('cool_heat_status').innerHTML = cooldown;
+        }
+    
+    	
+    
+    </script>
+    
+</head>
+
+<body>
+    <div class="topnav">
+        <a href="/"><i class="fa-solid fa-house-chimney" style="font-size:36px"></i></a>
+        <a href="/calc"><i class="fa-solid fa-calculator" style="font-size:36px"></i></a>
+        <a href="%EXTERNAL_URL%" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
+        <a href="/config"><i class="fa-solid fa-gear" style="font-size:36px;"></i></a>
+        <a href="/check"><i class="fa-solid fa-list-check" style="font-size:36px"></i></a>
+        <a href="/update" target="_blank"><i class="fa-solid fa-upload" style="font-size:36px"></i></a>
+    </div>
+      
+    <div class="row">
+        <h2>Fermentation Control Center</h2>
+        <center>
+            <table>
+            <tr>
+                <td class="right">Switch:</td>
+                <td><label class="switch">
+                    <input id="switch" type="checkbox" onClick=setData()>
+                    <span class="slider round"></span>
+                </label></td>
+            </tr>
+            <tr>
+                <td class="right">Power Consumption:</td>
+                <td><strong id="power_consumption"> %POWER_CONSUMPTION% Watt</strong></td>
+            </tr>
+            <tr>
+                <td class="right">Room Temp:</td>
+                <td><strong id="room_temp">%ROOM_TEMP% &deg;C</strong></td>
+            </tr>
+            <tr>
+                <td class="right">Compressor Temp:</td>
+                <td><strong id="comp_temp">%COMP_TEMP% &deg;C</strong></td>
+            </tr>
+            <tr>
+                <td class="right">Target Temp:</td>
+                <td><strong id="target_temp">%TARGET_TEMP% &deg;C</strong></td>
+            </tr>
+            <tr>
+                <td class="right">Compressor Temp:</td>
+                <td><strong id="beer_temp">%COMP_TEMP% &deg;C</strong></td>
+            </tr>
+            <tr class="row_center">
+                <td class="right">Current Temp:</td>
+                <td><strong id="fridge_temp"> %FRIDGE_TEMP% &deg;C  </strong><p id="cool_heat_status"></p></td>
+            </tr>
+            </table>
+        </center><br>
+    </div>
+    <div class="footer">&copy; by Sandholz Engineering (Version: %VERSION%)</div>
+</body>
+</html>
