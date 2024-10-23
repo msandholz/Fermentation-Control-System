@@ -42,3 +42,24 @@ setInterval(fetchData, 5000); // Daten alle 5 Sekunden abrufen
             )
             .catch(error => console.log('Fehler:', error));
 </script>
+
+<body>
+    <label for="myCheckbox">Check mich</label>
+    <input type="checkbox" id="myCheckbox" onclick="checkCheckbox()">
+    <p id="result">?</p><input type="checkbox" id="testCB">
+
+    <button onclick="checkCheckbox()">Checkbox überprüfen</button>
+
+    <script>
+        function checkCheckbox() {
+            const checkbox = document.getElementById('myCheckbox');
+            if (checkbox.checked) {
+            	document.getElementById('result').innerHTML = 'Die Checkbox ist aktiviert.';
+                document.getElementById('testCB').checked = true;
+            } else {
+               document.getElementById('result').innerHTML = 'Die Checkbox ist nicht aktiviert.';
+               document.getElementById('testCB').checked = false;
+            }
+        }
+    </script>
+</body>
