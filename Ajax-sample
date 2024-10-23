@@ -1,0 +1,18 @@
+// ESP32 Code (in der setup-Funktion)
+server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request){
+    String jsonData = "{\"temperature\":25, \"humidity\":60}";
+    request->send(200, "application/json", jsonData);
+});
+
+// AJAX-Aufruf im HTML/JavaScript
+<script>
+function fetchData() {
+  fetch('/data')
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('temp').innerText = data.temperature;
+      document.getElementById('hum').innerText = data.humidity;
+    });
+}
+setInterval(fetchData, 5000); // Daten alle 5 Sekunden abrufen
+</script>
