@@ -4,7 +4,8 @@
                 +'&TARGET_CO2='+ document.getElementById('target_co2').value
                 +'&TARGET_TEMP='+ document.getElementById('switch').checked);
             
-            alert (url);
+               console.log('LOG:'+url);
+           	alert (url);
 
 ---
 
