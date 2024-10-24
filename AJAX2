@@ -1,14 +1,3 @@
-        	const url = new URL(location.href
-            	+'/data'
-                +'?TARGET_TEMP='+ document.getElementById('target_temp').value
-                +'&TARGET_CO2='+ document.getElementById('target_co2').value
-                +'&TARGET_TEMP='+ document.getElementById('switch').checked);
-            
-               console.log('LOG:'+url);
-           	alert (url);
-
----
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,43 +7,73 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <script>
-     	function data(){
-        
-        	const url = new URL('https://example.com/api');
-        	const params = { 
-            	param1: document.getElementById('target_temp').value, 
-            	param2: document.getElementById('target_co2').value,
-            	param3: document.getElementById('switch').checked
-        	};
-   
-   
-        	document.getElementById('switch').checked = true;
-            document.getElementById('target_temp').value = 20;
-            document.getElementById('target_co2').value = 7,2;
+     	function fetchData(){
+     
+        	const url = new URL(location.href
+            	+'/data'
+                +'?TARGET_TEMP='+ document.getElementById('target_temp').value
+                +'&TARGET_CO2='+ document.getElementById('target_co2').value
+                +'&TARGET_TEMP='+ document.getElementById('switch').checked);
+                     
+           	console.log('REQUEST:'+url);
+           	//alert (url);
+        	
+			const Fermentation = {
+    			SWITCH: false,
+    			TARGET_TEMP: 30,
+                TARGET_CO2: 20,
+                POWER_CONSUMTION: 100,
+                ROOM_TEMP: 12,
+                COMP_TEMP: 80,
+                COMP_TEMP_COLOR: "green",
+                BEER_TEMP: 20,
+                FRIDGE_TEMP: 5,
+                COOL_STATUS: true,
+                HEAT_STATUS: false
+                };
 
-			document.getElementById('power_consumption').innerText = "50 Watt";
-            document.getElementById('room_temp').innerText = "10 °C";
-                
-            const c_temp = document.getElementById('comp_temp');
-                c_temp.innerText = "20 °C";
-                c_temp.style.color = "red";
-                 
-            document.getElementById('beer_temp').innerText = "40 °C";
-            document.getElementById('fridge_temp').innerText = "50 °C";
-                
-           	const ch_status = document.getElementById('cool_heat_status');
+			const json = JSON.stringify(Fermentation);       
             
-                ch_status.style.color = "orange"; 
-                ch_status.classList.add('fa-temperature-arrow-up');
-                ch_status.style.color = "blue"; 
-                ch_status.classList.add('fa-temperature-arrow-down');
-            
+            let data = JSON.parse(json);
+    		//alert (data);
+   
+   /*
+    		fetch(url)
+            	.then(response => response.json())
+           		.then(data => console.log('RESPONSE:', data)
+   */                 
+                  document.getElementById('switch').checked = data.SWITCH;
+                  document.getElementById('target_temp').value = data.TARGET_TEMP;
+                  document.getElementById('target_co2').value = data.TARGET_CO2;
+
+                  document.getElementById('power_consumption').innerText = data.POWER_CONSUMTION + " Watt";
+                  document.getElementById('room_temp').innerText = data.ROOM_TEMP + " °C";
+
+                  const c_temp = document.getElementById('comp_temp');
+                      c_temp.innerText = data.COMP_TEMP + " °C";
+                      c_temp.style.color = data.COMP_TEMP_COLOR;
+
+                  document.getElementById('beer_temp').innerText = data.BEER_TEMP + " °C";
+                  document.getElementById('fridge_temp').innerText = data.FRIDGE_TEMP + " °C";
+
+                  const ch_status = document.getElementById('cool_heat_status');
+                  if (data.HEAT_STATUS == true) {
+                      ch_status.style.color = "orange"; 
+                      ch_status.classList.add('fa-temperature-arrow-up');
+                  }
+
+                  if (data.COOL_STATUS == true) {
+                      ch_status.style.color = "blue"; 
+                      ch_status.classList.add('fa-temperature-arrow-down');
+                  }
+/*
+            )
+            .catch(error => console.log('Fehler:', error));
+   
+*/  
+		setInterval(fetchData, 1000); // Daten jede 1 Sekunde abrufen
         }
-    
-    	
-    
-    </script>
-    
+    </script>   
 </head>
 
 <body>
@@ -74,7 +93,7 @@
             <tr>
                 <td class="right">Switch:</td>
                 <td><label class="switch">
-                    <input id="switch" type="checkbox" onClick=data()>
+                    <input id="switch" type="checkbox" onClick=fetchData()>
                     <span class="slider round"></span>
                 </label></td>
             </tr>
