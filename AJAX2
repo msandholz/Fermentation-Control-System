@@ -1,3 +1,13 @@
+        	const url = new URL(location.href
+            	+'/data'
+                +'?TARGET_TEMP='+ document.getElementById('target_temp').value
+                +'&TARGET_CO2='+ document.getElementById('target_co2').value
+                +'&TARGET_TEMP='+ document.getElementById('switch').checked);
+            
+            alert (url);
+
+---
+
 <!DOCTYPE html>
 <html>
 <head>
