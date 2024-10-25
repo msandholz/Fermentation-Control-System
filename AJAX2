@@ -12,12 +12,13 @@ data["ROOM_TEMP"] = ROOM_TEMP + " C";
 data["COMP_TEMP"] = COMP_TEMP + " C";
 
 //calc
+String COMP_TEMP_COLOR;
 if (COMP_TEMP_F < COMP_TEMP_THRESHOLD*0.8) {
-    return "green";
+    COMP_TEMP_COLOR = "green";
 } else if (COMP_TEMP_F >= COMP_TEMP_THRESHOLD*0.8 && COMP_TEMP_F < COMP_TEMP_THRESHOLD) {
-   return "amber";
+   COMP_TEMP_COLOR =  "amber";
 } else {
-   return "red";
+   COMP_TEMP_COLOR = "red";
 }
 data["COMP_TEMP_COLOR"] = COMP_TEMP_COLOR;
 
