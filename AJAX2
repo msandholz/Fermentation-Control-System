@@ -12,8 +12,15 @@ data["ROOM_TEMP"] = ROOM_TEMP + " C";
 data["COMP_TEMP"] = COMP_TEMP + " C";
 
 //calc
-
+if (COMP_TEMP_F < COMP_TEMP_THRESHOLD*0.8) {
+    return "green";
+} else if (COMP_TEMP_F >= COMP_TEMP_THRESHOLD*0.8 && COMP_TEMP_F < COMP_TEMP_THRESHOLD) {
+   return "amber";
+} else {
+   return "red";
+}
 data["COMP_TEMP_COLOR"] = COMP_TEMP_COLOR;
+
 data["BEER_TEMP"] = BEER_TEMP;
 data["FRIDGE_TEMP"] = FRIDGE_TEMP;
 data["COOL_STATUS"] = COOL_STATUS;
