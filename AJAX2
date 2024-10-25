@@ -1,3 +1,32 @@
+cpp
+===
+
+// Allocate a temporary JsonDocument
+JsonDocument data;
+
+data["SWITCH"] = SWITCH;
+data["TARGET_TEMP"] = TARGET_TEMP;
+data["TARGET_CO2"] = TARGET_CO2;
+data["POWER_CONSUMTION"] = POWER_CONSUMTION + " Watt";
+data["ROOM_TEMP"] = ROOM_TEMP + " C";
+data["COMP_TEMP"] = COMP_TEMP + " C";
+
+//calc
+
+data["COMP_TEMP_COLOR"] = COMP_TEMP_COLOR;
+data["BEER_TEMP"] = BEER_TEMP;
+data["FRIDGE_TEMP"] = FRIDGE_TEMP;
+data["COOL_STATUS"] = COOL_STATUS;
+data["HEAT_STATUS"] = HEAT_STATUS;
+
+  // Lastly, you can print the resulting JSON to a String
+  String output;
+  serializeJson(data, output);
+
+
+Index.html
+==========
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,18 +47,18 @@
            	console.log('REQUEST:'+url);
            	//alert (url);
         	
-			const Fermentation = {
+		const Fermentation = {
     			SWITCH: false,
     			TARGET_TEMP: 30,
-                TARGET_CO2: 20,
-                POWER_CONSUMTION: 100,
-                ROOM_TEMP: 12,
-                COMP_TEMP: 80,
-                COMP_TEMP_COLOR: "green",
-                BEER_TEMP: 20,
-                FRIDGE_TEMP: 5,
-                COOL_STATUS: true,
-                HEAT_STATUS: false
+                	TARGET_CO2: 20,
+                	POWER_CONSUMTION: 100,
+                	ROOM_TEMP: 12,
+                	COMP_TEMP: 80,
+                	COMP_TEMP_COLOR: "green",
+                	BEER_TEMP: 20,
+                	FRIDGE_TEMP: 5,
+                	COOL_STATUS: true,
+                	HEAT_STATUS: false
                 };
 
 			const json = JSON.stringify(Fermentation);       
