@@ -4,6 +4,7 @@
     <title>%HOSTNAME%</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
     <script>
         function callRestAPI(URL) {
@@ -11,8 +12,19 @@
           xhttp.onload = function() {
             document.getElementById("output").innerHTML = this.responseText;
           }
-          xhttp.open("GET", "http://192.168.178.96/power_meter", true);
+          xhttp.open("GET", URL, true);
           xhttp.send();
+        }
+
+        function confirm_reboot() {
+            if (confirm("Do you really want to reboot?")) {
+                const xhttp = new XMLHttpRequest();
+                xhttp.onload = function() {
+                    document.getElementById("output").innerHTML = this.responseText;
+                }
+                xhttp.open("GET", "/reboot", true);
+                xhttp.send();
+            } 
         }
     </script>
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -29,8 +41,40 @@
     </div>
        
     <div class="row">
+        <center>
+        <h2>ESP Informations</h2>
+        <table class="center_border">
+            <tr>
+                <th class="center_border">CPU</th>
+                <th class="center_border">Memory</th>
+                <th class="center_border">SDK Version</th>
+            </tr>
+            <tr>
+                <td class="center_border">%CPU%</td>
+                <td class="center_border">%MEMORY% Byte</td>
+                <td class="center_border">%SDK%</td>
+            </tr>
+            <tr>
+                <th class="center_border">RSSI (%RSSI_DBM%):</th>
+                <td colspan="2">
+                    <progress value=%RSSI_PERCENT% max=100></progress>   %RSSI_PERCENT%&#37;
+                </td>
+            </tr>
+        </table>
+        <br>
+        <table class="center">
+            <tr>
+                <th class="center">LAST_REBOOT</th>
+                <td rowspan="2"><button class="danger" onclick="confirm_reboot()"><b>REBOOT</b></button></th>
+            </tr>
+            <tr>
+                <td class="center">%LAST_REBOOT%</td>
+            </tr>
+        </table>
+        <br>
         <h2>Test RESTful API</h2>
         <p><a href="#" onclick="callRestAPI('/power_meter')">Check Power Consumption</a></p>
+        <p><a href="#" onclick="callRestAPI('/getlog')">Read Logfile</a></p>
         <br>
         <center><div class="check-result" id="output"></div></center>
     </div> 

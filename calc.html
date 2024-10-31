@@ -4,6 +4,7 @@
     <title>%HOSTNAME%</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <script>
@@ -34,18 +35,28 @@
         function Brix2Plato() {
 	        var brix = document.getElementById("brix").value;
             var plato = brix * 0.962;
-	        document.getElementById("plato").innerHTML = plato.toFixed(1);
+	        document.getElementById("plato").value = plato.toFixed(1);
+            CorrectPlato();
+        }
+        
+        
+        // transform Plato to Brix 
+        function Plato2Brix() {
+	        var plato = document.getElementById("plato").value;
+            var brix = plato / 0.962;
+	        document.getElementById("brix").value = brix.toFixed(1);
             CorrectPlato();
         }
 
         // Temperaturkorrektur Plato
         function CorrectPlato() {
-	        var plato = parseFloat(document.getElementById("plato").innerHTML);
+   	        var plato = parseFloat(document.getElementById("plato").value);
 	        var temp_plato = parseFloat(document.getElementById("temp_plato").value);
  
             var tempfactor = plato * (1.00130346 / (1 + 0.0038661 * (temp_plato - 20)));
    
    	        document.getElementById("result").innerHTML = tempfactor.toFixed(1);
+          	
         }
         
         // calc alcohol
@@ -127,7 +138,7 @@
                     </tr>
                     <tr>
                       <td>Gemessene Stammwürze (°Plato):</td>
-                      <td><b><div id="plato">...</div></b></td>
+                      <td><input type="number" name="plato_input" id="plato" size="5" onchange="javascript:Plato2Brix()"></td>
                     </tr>
                     <tr>
                         <td>Gemessene Temperatur (°C):</td>

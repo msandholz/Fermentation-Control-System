@@ -4,12 +4,127 @@
     <title>%HOSTNAME%</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="refresh" content="5" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
+    <script>
+
+        function setColor(color) {
+            const fridge_color = document.getElementsByClassName('FRIDGE_TEMP_COLOR');
+            fridge_color[0].style.color = color;
+            fridge_color[1].style.color = color;
+            fridge_color[2].style.color = color;
+        }
+
+        function fetchData(url) { 
+            fetch(url)
+                .then(response => response.json())
+                .then((data) => {
+                    console.log('RESPONSE:', data)
+                    document.getElementById('TARGET_TEMP').value = data.TARGET_TEMP;
+                    document.getElementById('TARGET_CO2').value = data.TARGET_CO2;
+                    document.getElementById('POWER_CONSUMPTION').innerHTML = data.POWER_CONSUMPTION;
+                    document.getElementById('ROOM_TEMP').innerHTML = data.ROOM_TEMP;
+                    
+                    document.getElementById('COMP_TEMP').innerHTML = data.COMP_TEMP;
+                    document.getElementsByClassName('COMP_TEMP_COLOR')[0].style.color = data.COMP_TEMP_COLOR; 
+                    document.getElementsByClassName('COMP_TEMP_COLOR')[1].style.color = data.COMP_TEMP_COLOR; 
+                                       
+                    document.getElementById('BEER_TEMP').innerHTML = data.BEER_TEMP;
+                    document.getElementById('FRIDGE_TEMP').innerHTML = data.FRIDGE_TEMP;
+                                        
+                    if (data.SHOW_HEAT_UP == true) {
+                        document.getElementById('COOL_HEAT_STATUS').innerHTML = "&#127777;&#8593;";
+                        setColor("orange");
+                        console.log("HEAT_UP");
+
+                    } else if (data.SHOW_COOL_DOWN == true) {
+                        document.getElementById('COOL_HEAT_STATUS').innerHTML = "&#127777;&#8595;";
+                        setColor("blue");
+                        console.log("COOL_DOWN");
+                    } else {
+                        document.getElementById('COOL_HEAT_STATUS').innerHTML = "";
+                        setColor("black");
+                        console.log("NOTHING");
+                    }                  
+                })        
+                .catch(error => console.log('ERROR:', error));
+
+            calc_pressure();   
+        }
+
+        function refreshData(){
+            getData();
+            setInterval(getData, 5000); // Daten alle 5 Sekunde abrufen  
+        }
+
+        function getData(){
+            const url = new URL(location.href+'getdata');
+            console.log('REQUEST:'+url);
+            fetchData(url);
+        }
+
+        function setData(){
+            const url = new URL(location.href
+                +'setdata'
+                +'?TARGET_TEMP='+ document.getElementById('TARGET_TEMP').value
+                +'&TARGET_CO2='+ document.getElementById('TARGET_CO2').value
+                +'&SWITCH=' + document.getElementById('SWITCH').checked);
+                
+            console.log('REQUEST:'+url);
+            fetchData(url);
+        }
+
+        function TempCount(updown) {
+	        var value = document.getElementById("TARGET_TEMP").value;
+           
+            if (updown == "+"){
+                if(value < 25) { 
+                    value++;
+                    document.getElementById("TARGET_TEMP").value = value;
+                    setData(); 
+                }
+            } else {
+                if(value > 0) {
+                    value--; 
+                    document.getElementById("TARGET_TEMP").value = value;
+                    setData();  
+                }
+            }     
+        }
+
+        function CO2Count(updown) {
+	        var value = document.getElementById("TARGET_CO2").value * 10;
+           
+            if (updown == "+"){
+                if(value < 70) { 
+                    value++;
+                    document.getElementById("TARGET_CO2").value = value / 10; 
+                    setData();
+                }
+            } else {
+                if(value > 0) { 
+                    value--;
+                    document.getElementById("TARGET_CO2").value = value / 10; 
+                    setData();
+                }
+            }
+        }
+        
+        // calculate co2 pressure
+        function calc_pressure() {
+            var temp = parseFloat(document.getElementById("TARGET_TEMP").value);
+            var co2 = parseFloat(document.getElementById("TARGET_CO2").value) / 10.0;
+            //var pressure = temp + co2;
+            var pressure = co2 / Math.pow(Math.E, -10.73797 + (2617.25 / (temp + 273.15)))- 1.013;
+            
+            document.getElementById("PRESSURE").innerHTML = pressure.toFixed(1);
+        }
+
+    </script>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
-<body>
+<body onload="refreshData()">
     <div class="topnav">
         <a href="/"><i class="fa-solid fa-house-chimney" style="font-size:36px"></i></a>
         <a href="/calc"><i class="fa-solid fa-calculator" style="font-size:36px"></i></a>
@@ -24,31 +139,56 @@
         <center>
             <table>
             <tr>
-                <td class="right">Switch:</td>
-                <td><label class="switch">
-                    <input type="checkbox" onClick="location.href='/switch'" %SWITCH%>
+                <th colspan="2" class="txt_center"><b>Switch:</b>
+                    <label class="switch">
+                    <input id="SWITCH" type="checkbox" onClick="setData()" checked>
                     <span class="slider round"></span>
-                </label></td>
+                    </label>
+                </th>
+            </tr>
+            <tr>
+                <th colspan="2" class="txt_center"><b>Target Temp [&deg;C]:</b></th>
+            </tr>
+            <tr>
+                <th colspan="2">
+                    <input class="big-button" type="submit" value="-" onclick="javascript:TempCount('-')">
+                    <input class="big-font" type="number" min="20" max="99" size="4" name="TARGET_TEMP" id="TARGET_TEMP" value="5" onchange="setData()">
+                    <input class="big-button" type="submit" value="+" onclick="javascript:TempCount('+')">
+                </th>
+            </tr>
+            <tr>
+                <th colspan="2" class="txt_center"><b>Carbonisation [g/Liter]:</b></th>
+            </tr>
+            <tr>
+                <th colspan="2">
+                    <input class="big-button" type="submit" value="-" onclick="javascript:CO2Count('-')">
+                    <input class="big-font" type="number" min="0" max="180" size="5" name="TARGET_CO2" id="TARGET_CO2" value="%TARGET_CO2%" onchange="setData()">
+                    <input class="big-button" type="submit" value="+" onclick="javascript:CO2Count('+')">
+                </th>
+            </tr>
+            <tr>
+                <td class="right">Pressure:</td>
+                <td><b id="PRESSURE"></b><b> bar</b></td>
             </tr>
             <tr>
                 <td class="right">Power Consumption:</td>
-                <td><strong> %POWER_CONSUMPTION% Watt</strong></td>
+                <td><b id="POWER_CONSUMPTION">%POWER_CONSUMPTION%</b><b> Watt</b></td>
             </tr>
             <tr>
                 <td class="right">Room Temp:</td>
-                <td><strong>%ROOM_TEMP% &deg;C</strong></td>
+                <td><b id="ROOM_TEMP">%ROOM_TEMP%</b><b> &deg;C</b></td>
             </tr>
             <tr>
                 <td class="right">Compressor Temp:</td>
-                <td><strong id="%COMP_COLOR%">%COMP_TEMP% &deg;C</strong></td>
+                <td><b id="COMP_TEMP" class="COMP_TEMP_COLOR">%COMP_TEMP%</b><b class="COMP_TEMP_COLOR"> &deg;C</b></td>
             </tr>
             <tr>
-                <td class="right">Target Temp:</td>
-                <td><strong>%TARGET_TEMP% &deg;C</strong></td>
+                <td class="right">Beer Temp:</td>
+                <td><b id="BEER_TEMP">%BEER_TEMP%</b><b> &deg;C</b></td>
             </tr>
             <tr class="row_center">
                 <td class="right">Current Temp:</td>
-                <td><strong> %FRIDGE_TEMP% &deg;C  </strong>%COOL_HEAT_STATUS%</td>
+                <td><b id="FRIDGE_TEMP" class="FRIDGE_TEMP_COLOR">%FRIDGE_TEMP%</b><b class="FRIDGE_TEMP_COLOR"> &deg;C  </b><b class="FRIDGE_TEMP_COLOR" id="COOL_HEAT_STATUS"></b></td>
             </tr>
             </table>
         </center><br>

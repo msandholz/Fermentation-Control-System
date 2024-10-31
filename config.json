@@ -1,8 +1,10 @@
 {
-    "HOSTNAME":"ESP-Fermentation",
+    "HOSTNAME":"ESP-Fer-Test",
     "MQTT_BROKER":"192.168.178.12",
     "EXTERNAL_URL":"http://192.168.178.12:3000/d/cLwyHTWgz/fermentation-control-system?orgId=1",
-    "TARGET_TEMP":10, 
+    "WHATSAPP_NOTIFICATION" : false,
+    "TARGET_TEMP":10,
+    "TARGET_CO2" : 5.5, 
     "TEMP_HYSTERESIS":1,
     "COMP_RUNNING_TIME":60,
     "COMP_TEMP_THRESHOLD":50,

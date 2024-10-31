@@ -4,6 +4,7 @@
     <title>%HOSTNAME%</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
@@ -44,12 +45,24 @@
             <td><input type="text" name="EXTERNAL_URL" value="%EXTERNAL_URL%"></td>
            </tr>
            <tr>
+           <td class="right">WhatsApp Notification:</td>
+           <td>
+              <select name="WHATSAPP_NOTIFICATION">
+                <option value="true"%WHATSAPP_TRUE%>true</option>
+                <option value="false"%WHATSAPP_FALSE%>false</option>
+              </select>
+           </tr>
+           <tr>
             <td class="right">Hysteresis [&deg;C]:</td>
             <td><input type="number" name="TEMP_HYSTERESIS" value="%TEMP_HYSTERESIS%"></td>
            </tr>
            <tr>
             <td class="right">Target-Temp [&deg;C]:</td>
             <td><input type="number" name="TARGET_TEMP" value="%TARGET_TEMP%"></td>
+           </tr>
+           <tr>
+            <td class="right">Target-CO2 [g/Liter]:</td>
+            <td><input type="number" name="TARGET_CO2" value="%TARGET_CO2%"></td>
            </tr>
            <tr>
             <td class="right">Compressor Running Time [sec]:</td>
@@ -73,7 +86,7 @@
            </tr>
            <tr>
             <td></td>
-              <td><input type="submit" value="Submit"></td>
+              <td><b><input class="success" type="submit" value="Submit"></b></td>
            </tr>
           </form>
         </table>
