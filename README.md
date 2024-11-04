@@ -1,4 +1,9 @@
 # Fermentation-Control-System: Change Log
+
+
+platform_packages =
+    framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32#master
+
 - Board: ESP32 D1 Mini NodeMCU 
 - Platform.ini: https://docs.platformio.org/en/latest/boards/espressif32/wemos_d1_mini32.html
 - Pinout: https://cdn.shopify.com/s/files/1/1509/1638/files/D1_Mini_ESP32_-_pinout.pdf?v=1604068668
