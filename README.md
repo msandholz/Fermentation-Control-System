@@ -1,5 +1,9 @@
 # Fermentation-Control-System: Change Log
 
+https://www.youtube.com/watch?v=NNyTjNQBxTE
+plattform.ini:
+upload_port = esp.local
+upload_flags = --auth=password
 
 platform_packages =
     framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32#master
