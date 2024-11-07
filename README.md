@@ -1,4 +1,7 @@
-# Fermentation-Control-System: Change Log
+# ESP32 WebOTA
+
+https://lastminuteengineers.com/esp32-ota-web-updater-arduino-ide/
+https://randomnerdtutorials.com/esp32-over-the-air-ota-programming/
 
 https://www.youtube.com/watch?v=NNyTjNQBxTE
 plattform.ini:
@@ -6,7 +9,11 @@ upload_port = esp.local
 upload_flags = --auth=password
 
 platform_packages =
-    framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32#master
+    framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#master
+
+
+# Fermentation-Control-System: Change Log
+
 
 - Board: ESP32 D1 Mini NodeMCU 
 - Platform.ini: https://docs.platformio.org/en/latest/boards/espressif32/wemos_d1_mini32.html
