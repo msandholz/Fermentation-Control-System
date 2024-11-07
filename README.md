@@ -5,6 +5,7 @@ https://randomnerdtutorials.com/esp32-over-the-air-ota-programming/
 
 https://www.youtube.com/watch?v=NNyTjNQBxTE
 plattform.ini:
+upload_protocol = espota
 upload_port = esp.local
 upload_flags = --auth=password
 
