@@ -1,5 +1,38 @@
 # ESP32 WebOTA
 
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+<style>
+input#file-upload[type="file"] {
+    display: none;
+}
+.file-upload {
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    cursor: pointer;
+    width: 300px;
+    height: 100px;
+}
+</style>
+</head>
+<body>
+
+<h1>This is a Heading</h1>
+<p>This is a paragraph.</p>
+
+<label for="file-upload" class="file-upload">
+	<span><img src="file-upload.svg"> Select file</span>
+</label>
+<input id="file-upload" type="file"/>
+
+</body>
+</html>
+
+
+
+
 https://lastminuteengineers.com/esp32-ota-web-updater-arduino-ide/
 https://randomnerdtutorials.com/esp32-over-the-air-ota-programming/
 
