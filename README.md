@@ -31,6 +31,10 @@ input#file-upload[type="file"] {
 </html>
 ```
 
+```
+https://jun711.github.io/web/how-to-listen-for-upload-progress-when-using-AJAX-XMLHttpRequest-XHR/
+
+```
 
 
 https://lastminuteengineers.com/esp32-ota-web-updater-arduino-ide/
