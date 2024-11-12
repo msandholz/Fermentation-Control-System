@@ -1,5 +1,55 @@
 # ESP32 WebOTA
 ```
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+.progress-bar-bck {
+	border-radius:10px;
+    color:#000!important;
+    background-color:#f1f1f1!important
+}
+
+.progress-bar {
+	text-align:center;
+    content:"";
+    display:table;
+    border-radius:10px;
+    clear:both; 
+    color:#fff!important;
+    background-color:#4CAF50!important    
+}
+
+</style>
+</head>
+<body>
+<table>
+	<tr>
+    	<th>
+        	<form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
+			   	<input type='file' name='update'>
+	      		<input type='submit' value='Update'>
+            </form>
+        </th>
+     </tr>
+     <tr>
+		<td><nobr>
+        	<div>Progress:
+         	<div class="progress-bar-bck">
+  			<div class="progress-bar" style="width:80%">80%</div>
+		</div></div></nobr>
+		</td>
+      </tr>
+    </table>
+</body>
+</html>
+
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
