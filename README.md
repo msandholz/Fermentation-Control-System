@@ -1,6 +1,5 @@
 # ESP32 WebOTA
 ```
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,6 +21,17 @@
     background-color:#4CAF50!important    
 }
 
+input#file-upload[type="file"] {
+    display: none;
+}
+.file-upload {
+    padding: 6px 6px;
+    cursor: pointer;
+    width: 300px;
+    height: 100px;
+}
+
+
 </style>
 </head>
 <body>
@@ -29,17 +39,18 @@
 	<tr>
     	<th>
         	<form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
-			   	<input type='file' name='update'>
+            	<label for="file">File</label>
+			   	<input class="file-upload" type="file" name="update">
 	      		<input type='submit' value='Update'>
             </form>
         </th>
      </tr>
      <tr>
-		<td><nobr>
-        	<div>Progress:
-         	<div class="progress-bar-bck">
+		<td>
+        	<label for="test">Progress:</label>
+         	<div id="test" class="progress-bar-bck">
   			<div class="progress-bar" style="width:80%">80%</div>
-		</div></div></nobr>
+		</div>
 		</td>
       </tr>
     </table>
@@ -48,23 +59,6 @@
 
 
 
-
-
-<!DOCTYPE html>
-<html>
-<head>
-<title>Page Title</title>
-<style>
-input#file-upload[type="file"] {
-    display: none;
-}
-.file-upload {
-    border: 1px solid #ccc;
-    padding: 6px 12px;
-    cursor: pointer;
-    width: 300px;
-    height: 100px;
-}
 </style>
 </head>
 <body>
