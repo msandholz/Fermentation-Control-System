@@ -1,3 +1,77 @@
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datei Upload</title>
+    <script>
+    
+    function start() {
+    	document.getElementById("upload-button").addEventListener("click", () => {
+    		const fileInput = document.getElementById("file-input");
+    		const progressBar = document.getElementById("progress-bar");
+    		const statusText = document.getElementById("status");
+
+    		if (fileInput.files.length === 0) {
+        		alert("Please select file to upload!");
+        		return;
+    		}
+
+    		const file = fileInput.files[0];
+    		const formData = new FormData();
+    		formData.append("file", file);
+
+    		const xhr = new XMLHttpRequest();
+    		xhr.open("POST", "/upload"); // Ersetze '/upload' mit deiner Server-Upload-URL.
+
+    		// Fortschritt überwachen
+    		xhr.upload.onprogress = (event) => {
+        		if (event.lengthComputable) {
+            		const percentComplete = (event.loaded / event.total) * 100;
+            		progressBar.value = percentComplete;
+            		statusText.textContent = `Uploading: ${Math.round(percentComplete)}%`;
+        		}
+    		};
+
+    		// Erfolgreiches Hochladen
+    		xhr.onload = () => {
+        		if (xhr.status === 200) {
+            		statusText.textContent = "Upload successful!";
+        		} else {
+            		statusText.textContent = `Error: ${xhr.statusText}`;
+        		}
+    		};
+
+    		// Fehler behandeln
+    		xhr.onerror = () => {
+        		statusText.textContent = "Ein Fehler ist aufgetreten.";
+    		};
+
+    		// Upload starten
+    		xhr.send(formData);
+		});
+    }
+    
+    </script> 
+</head>
+<body onload="start()">
+    <h1>Datei hochladen</h1>
+    <form id="upload-form">
+        <input type="file" id="file-input" />
+        <button type="button" id="upload-button">Hochladen</button>
+    </form>
+    <meter id="progress-bar" value="0" max="100"></meter>
+    <p id="status"></p>
+</body>
+</html>
+
+
+
+```
+
+
+
 # ESP32 WebOTA
 ```
 <!DOCTYPE html>
