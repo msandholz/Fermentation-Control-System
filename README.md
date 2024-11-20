@@ -1,3 +1,5 @@
+WLAN Signalstärke in % = (dbm+100)/70*100
+
 https://wiki.selfhtml.org/wiki/JavaScript/XMLHttpRequest
 
 
