@@ -1,3 +1,7 @@
+https://wiki.selfhtml.org/wiki/JavaScript/XMLHttpRequest
+
+
+
 ```
 <!DOCTYPE html>
 <html lang="en">
