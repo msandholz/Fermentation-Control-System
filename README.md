@@ -1,3 +1,11 @@
+
+https://www.youtube.com/watch?v=oKqVCktSa8w
+
+https://github.com/espressif/arduino-esp32/blob/master/libraries/ArduinoOTA/examples/BasicOTA/BasicOTA.ino
+https://github.com/pixelEDI/ESP32_XIAO/tree/main/06_ESP32_OTA
+
+
+
 WLAN Signalstärke in % = (dbm+100)/70*100
 
 https://wiki.selfhtml.org/wiki/JavaScript/XMLHttpRequest
