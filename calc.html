@@ -1,20 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>  
-    <title>%HOSTNAME%</title>
+    <title>Fermentation-Control-System</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/style.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+
     <script>
-        function init() {
+       function init() {
+            getData('/getdata');
             calc_pressure();
             Brix2Plato();
             CorrectPlato();
             calc_alcohol();
         }
         
+        // request data
+        function getData(URL) {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                // Parse the JSON data from the response
+                var data = JSON.parse(xhr.responseText);
+                console.log(data); // Handle the JSON data
+
+                document.title = data["HOSTNAME"];
+                document.getElementById("VERSION").innerHTML = data["VERSION"];
+                document.getElementById("EXT_URL").href = data["EXTERNAL_URL"];
+                
+            } else {
+                // Handle any errors that occur
+                console.error("Request failed with status: " + xhr.status);
+            }
+          }
+          xhr.open("GET", URL, true);
+          xhr.send();
+        }
+
+        // Select beer type
         function select_co2() {
             var co2 = parseFloat(document.getElementById("beer").value);
             document.getElementById("co2").value = co2;
@@ -38,8 +63,7 @@
 	        document.getElementById("plato").value = plato.toFixed(1);
             CorrectPlato();
         }
-        
-        
+               
         // transform Plato to Brix 
         function Plato2Brix() {
 	        var plato = document.getElementById("plato").value;
@@ -78,10 +102,9 @@
     <div class="topnav">
         <a href="/"><i class="fa-solid fa-house-chimney" style="font-size:36px"></i></a>
         <a href="/calc"><i class="fa-solid fa-calculator" style="font-size:36px"></i></a>
-        <a href="%EXTERNAL_URL%" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
+        <a href="#" id="EXT_URL" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
         <a href="/config"><i class="fa-solid fa-gear" style="font-size:36px;"></i></a>
         <a href="/check"><i class="fa-solid fa-list-check" style="font-size:36px"></i></a>
-        <a href="/update" target="_blank"><i class="fa-solid fa-upload" style="font-size:36px"></i></a>
     </div>
       
     <div class="row">
@@ -177,6 +200,6 @@
         </div>
         </center><br>
     </div>
-    <div class="footer">&copy; by Sandholz Engineering (Version: %VERSION%)</div>
+    <div class="footer">&copy; by Sandholz Engineering (Version: <span id="VERSION"></span>)</div>
 </body>
 </html>

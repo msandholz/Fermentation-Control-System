@@ -1,21 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>%HOSTNAME%</title>
+    <title>Fermentation-Control-System</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
     <script>
-        function callRestAPI(URL) {
-          const xhttp = new XMLHttpRequest();
-          xhttp.onload = function() {
-            document.getElementById("output").innerHTML = this.responseText;
-          }
-          xhttp.open("GET", URL, true);
-          xhttp.send();
+        function refreshData(){
+            getData('/getdata');
+            setInterval(function(){getData('/getdata');}, 5000); // Daten alle 5 Sekunde abrufen  
         }
+        
+        // Request data
+        function getData(URL) {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                // Parse the JSON data from the response
+                var data = JSON.parse(xhr.responseText);
+                console.log(data); // Handle the JSON data
 
+                document.title = data["HOSTNAME"];
+                document.getElementById("VERSION").innerHTML = data["VERSION"];
+                document.getElementById("EXT_URL").href = data["EXTERNAL_URL"];
+                document.getElementById("CHIP_MODEL").innerHTML = data["CHIP_MODEL"];
+                document.getElementById("SDK_VERSION").innerHTML = data["SDK_VERSION"];
+
+                var rssi_value = Math.round((data["RSSI_DBM"]+100)/70*100);
+                document.getElementById("RSSI_METER").value = rssi_value;
+                document.getElementById("RSSI_TEXT").innerHTML = "  " + rssi_value + " &#37; ("  + data["RSSI_DBM"] + " dbm):";    
+
+                //var ram_used = data["RAM_TOTAL"] - data["RAM_FREE"];
+                var ram_value = Math.round(data["RAM_USED"]/data["RAM_TOTAL"]*100);
+                document.getElementById("RAM_METER").value = ram_value;
+                document.getElementById("RAM_TEXT").innerHTML = "  " + ram_value + " &#37; (" + data["RAM_USED"]+ " bytes of " + data["RAM_TOTAL"] + " bytes used)";   
+                
+                var flash_value = Math.round(data["FLASH_USED"]/data["FLASH_TOTAL"]*100);
+                document.getElementById("FLASH_METER").value = flash_value;
+                document.getElementById("FLASH_TEXT").innerHTML = "  " + flash_value + " &#37; (" + data["FLASH_USED"] + " bytes of " + data["FLASH_TOTAL"] + " bytes used)";   
+               
+                var file_value = Math.round(data["FILESYSTEM_USED"]/data["FILESYSTEM_TOTAL"]*100);
+                document.getElementById("FILE_METER").value = file_value;
+                document.getElementById("FILE_TEXT").innerHTML = "  " + file_value + " &#37; (" + data["FILESYSTEM_USED"] + " bytes of " + data["FILESYSTEM_TOTAL"] + " bytes used)";   
+
+                document.getElementById("SW_VERSION").innerHTML = data["VERSION"] + " (size: " + data["FLASH_USED"] + " bytes)";
+
+                document.getElementById("IP_ADDRESS").innerHTML = data["IP_ADDRESS"] + " (Hostname: " + data["HOSTNAME"] + ".local)";
+
+                document.getElementById("LAST_REBOOT").innerHTML = data["LAST_REBOOT"];
+
+
+            } else {
+                // Handle any errors that occur
+                console.error("Request failed with status: " + xhr.status);
+            }
+          }
+          xhr.open("GET", URL, true);
+          xhr.send();
+        }       
+        
+        // Reboot the ESP
         function confirm_reboot() {
             if (confirm("Do you really want to reboot?")) {
                 const xhttp = new XMLHttpRequest();
@@ -26,59 +72,99 @@
                 xhttp.send();
             } 
         }
-    </script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+
+        // testing different URLs
+        function callRestAPI() {
+            const selectElement = document.getElementById('URL');
+            const URL = selectElement.value;
+    
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    document.getElementById("output").innerHTML = this.responseText;
+                } else {
+                    // Handle any errors that occur
+                    var Error_msg = "Request failed with status: " + xhr.status
+                    document.getElementById("output").innerHTML = Error_msg;
+                    console.error(Error_msg);
+                }
+            }
+            xhr.open("GET", URL, true);
+            xhr.send();
+        }
+
+        function file_name(obj) {
+            var filename = obj.value.split('/(\\|\/)/g').pop();
+            //var filename = obj.value;
+            console.log(filename);
+            document.getElementById("FILE_NAME").innerHTML = filename +" ";
+            document.getElementById("FILE").file = filename;
+        };
+
+  </script>
 </head>
 
-<body>
+<body onload="refreshData()">
     <div class="topnav">
         <a href="/"><i class="fa-solid fa-house-chimney" style="font-size:36px"></i></a>
         <a href="/calc"><i class="fa-solid fa-calculator" style="font-size:36px"></i></a>
-        <a href="%EXTERNAL_URL%" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
+        <a href="#" id="EXT_URL"  target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
         <a href="/config"><i class="fa-solid fa-gear" style="font-size:36px;"></i></a>
         <a href="/check"><i class="fa-solid fa-list-check" style="font-size:36px"></i></a>
-        <a href="/update" target="_blank"><i class="fa-solid fa-upload" style="font-size:36px"></i></a>
     </div>
        
     <div class="row">
         <center>
-        <h2>ESP Informations</h2>
-        <table class="center_border">
-            <tr>
-                <th class="center_border">CPU</th>
-                <th class="center_border">Memory</th>
-                <th class="center_border">SDK Version</th>
-            </tr>
-            <tr>
-                <td class="center_border">%CPU%</td>
-                <td class="center_border">%MEMORY% Byte</td>
-                <td class="center_border">%SDK%</td>
-            </tr>
-            <tr>
-                <th class="center_border">RSSI (%RSSI_DBM%):</th>
-                <td colspan="2">
-                    <progress value=%RSSI_PERCENT% max=100></progress>   %RSSI_PERCENT%&#37;
+        <h2>ESP Informations:</h2>
+        <table class="left_border">
+            <tr><th class="left_border">Chip Model:</th><td id="CHIP_MODEL" class="left_border" colspan="2"></td></tr>
+            <tr><th class="left_border">SDK Version:</th><td id="SDK_VERSION" colspan="2"></td></tr>
+            <tr><th class="left_border" id="RSSI_DBM">RSSI:</th>
+                <td class="left_border" colspan="2">
+                    <meter span id="RSSI_METER" value=0 min=0 max=100></meter><span id="RSSI_TEXT"></span>
                 </td>
             </tr>
-        </table>
-        <br>
-        <table class="center">
-            <tr>
-                <th class="center">LAST_REBOOT</th>
-                <td rowspan="2"><button class="danger" onclick="confirm_reboot()"><b>REBOOT</b></button></th>
+            <tr><th class="left_border">RAM:</th>
+                <td class="left_border" colspan="2">
+                    <meter id="RAM_METER" value=0 min=0 max=100></meter><span id="RAM_TEXT"></span>
+                </td>
+            </tr>       
+            <tr><th class="left_border">FLASH:</th>
+                <td class="left_border" colspan="2">
+                    <meter id="FLASH_METER" value=0 min=0 max=100></meter><span id="FLASH_TEXT"></span>
+                </td>
             </tr>
-            <tr>
-                <td class="center">%LAST_REBOOT%</td>
+            <tr><th class="left_border">FILE SYSTEM:</th>
+                <td class="left_border" colspan="2">
+                    <meter id="FILE_METER" value=0 min=0 max=100></meter><span id="FILE_TEXT"></span>
+                </td> 
             </tr>
+            <tr><th class="left_border">SW Release:</th><td id="SW_VERSION" class="left_border" colspan="2"></td></tr>
+            
+            <tr><th class="left_border">OTA Upload:</th><td id="IP_ADDRESS" class="left_border" colspan="2"></td></tr>
+
+            <tr><th class="left_border">Last Reboot:</th>
+                <td id="LAST_REBOOT" class="left_border"></td>
+                <td><button class="danger" onclick="confirm_reboot()"><b>REBOOT</b></button></td>
+            </tr>
+       
         </table>
-        <br>
+        <br>    
         <h2>Test RESTful API</h2>
-        <p><a href="#" onclick="callRestAPI('/power_meter')">Check Power Consumption</a></p>
-        <p><a href="#" onclick="callRestAPI('/getlog')">Read Logfile</a></p>
+        <select id="URL" name="URL">
+            <option value="/getdata">/getdata</option>
+            <option value="/getconfig">/getconfig</option>
+          </select>
+          <button class="success" onclick="callRestAPI()"><b>Request</b></button>
+        <br><br>
+        <div class="check-result" id="output"></div>
+
         <br>
-        <center><div class="check-result" id="output"></div></center>
+    </center>
     </div> 
     
-    <div class="footer">&copy; by Sandholz Engineering (Version: %VERSION%)</div>
+    
+    
+    <div class="footer">&copy; by Sandholz Engineering (Version: <span id="VERSION"></span>)</div>
 </body>
 </html>

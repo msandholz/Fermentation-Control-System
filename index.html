@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>%HOSTNAME%</title>
+    <title>Fermentation-Control-System</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
     <script>
+        function refreshData(){
+            getData('/getdata');
+            setInterval(function(){getData('/getdata');}, 5000); // Daten alle 5 Sekunde abrufen  
+        }
 
         function setColor(color) {
             const fridge_color = document.getElementsByClassName('FRIDGE_TEMP_COLOR');
@@ -15,63 +20,74 @@
             fridge_color[2].style.color = color;
         }
 
-        function fetchData(url) { 
-            fetch(url)
-                .then(response => response.json())
-                .then((data) => {
-                    console.log('RESPONSE:', data)
-                    document.getElementById('TARGET_TEMP').value = data.TARGET_TEMP;
-                    document.getElementById('TARGET_CO2').value = data.TARGET_CO2;
-                    document.getElementById('POWER_CONSUMPTION').innerHTML = data.POWER_CONSUMPTION;
-                    document.getElementById('ROOM_TEMP').innerHTML = data.ROOM_TEMP;
-                    
-                    document.getElementById('COMP_TEMP').innerHTML = data.COMP_TEMP;
-                    document.getElementsByClassName('COMP_TEMP_COLOR')[0].style.color = data.COMP_TEMP_COLOR; 
-                    document.getElementsByClassName('COMP_TEMP_COLOR')[1].style.color = data.COMP_TEMP_COLOR; 
+        function getData(URL) {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                // Parse the JSON data from the response
+                var data = JSON.parse(xhr.responseText);
+                console.log(data); // Handle the JSON data
+
+                document.title = data.HOSTNAME;
+                document.getElementById("VERSION").innerHTML = data.VERSION;
+                document.getElementById("EXT_URL").href = data.EXTERNAL_URL;
+   
+                document.getElementById("TARGET_TEMP").value = data.TARGET_TEMP;             
+                document.getElementById("TARGET_CO2").value = data.TARGET_CO2;
+                document.getElementById("POWER_CONSUMPTION").innerHTML = data.POWER_CONSUMPTION;
+                document.getElementById("BUBBLES_PER_MINUTE").innerHTML = data.BUBBLES_PER_MINUTE;
+
+                document.getElementById("ROOM_TEMP").innerHTML = data.ROOM_TEMP;
+                document.getElementById("ROOM_HUMIDITY").innerHTML = data.ROOM_HUMIDITY;
+                document.getElementById("ROOM_PRESSURE").innerHTML = data.ROOM_PRESSURE;
+                
+                document.getElementById("COMP_TEMP").innerHTML = data.COMP_TEMP;
+                document.getElementsByClassName("COMP_TEMP_COLOR")[0].style.color = data.COMP_TEMP_COLOR; 
+                document.getElementsByClassName("COMP_TEMP_COLOR")[1].style.color = data.COMP_TEMP_COLOR; 
                                        
-                    document.getElementById('BEER_TEMP').innerHTML = data.BEER_TEMP;
-                    document.getElementById('FRIDGE_TEMP').innerHTML = data.FRIDGE_TEMP;
-                                        
-                    if (data.SHOW_HEAT_UP == true) {
-                        document.getElementById('COOL_HEAT_STATUS').innerHTML = "&#127777;&#8593;";
-                        setColor("orange");
-                        console.log("HEAT_UP");
+                document.getElementById("BEER_TEMP").innerHTML = data.BEER_TEMP;
+                document.getElementById("FRIDGE_TEMP").innerHTML = data.FRIDGE_TEMP;
 
-                    } else if (data.SHOW_COOL_DOWN == true) {
-                        document.getElementById('COOL_HEAT_STATUS').innerHTML = "&#127777;&#8595;";
-                        setColor("blue");
-                        console.log("COOL_DOWN");
-                    } else {
-                        document.getElementById('COOL_HEAT_STATUS').innerHTML = "";
-                        setColor("black");
-                        console.log("NOTHING");
-                    }                  
-                })        
-                .catch(error => console.log('ERROR:', error));
+                // calc colors and symbols of COOL_HEAT_STATUS
+                if (data.SHOW_HEAT_UP == true) {
+                    document.getElementById("COOL_HEAT_STATUS").innerHTML = "&#127777;&#8593;";
+                    setColor("orange");
+                    console.log("HEAT_UP");
 
-            calc_pressure();   
-        }
+                } else if (data.SHOW_COOL_DOWN == true) {
+                    document.getElementById("COOL_HEAT_STATUS").innerHTML = "&#127777;&#8595;";
+                    setColor("blue");
+                    console.log("COOL_DOWN");
+                } else {
+                    document.getElementById("COOL_HEAT_STATUS").innerHTML = "";
+                    setColor("black");
+                    console.log("NOTHING");
+                }
 
-        function refreshData(){
-            getData();
-            setInterval(getData, 5000); // Daten alle 5 Sekunde abrufen  
-        }
+                // calc pressure
+                var temp = parseFloat(document.getElementById("TARGET_TEMP").value);
+                var co2 = parseFloat(document.getElementById("TARGET_CO2").value) / 10.0;
+                var pressure = co2 / Math.pow(Math.E, -10.73797 + (2617.25 / (temp + 273.15)))- 1.013;          
+                document.getElementById("PRESSURE").innerHTML = pressure.toFixed(1);
 
-        function getData(){
-            const url = new URL(location.href+'getdata');
-            console.log('REQUEST:'+url);
-            fetchData(url);
+            } else {
+                // Handle any errors that occur
+                console.error("Request failed with status: " + xhr.status);
+            }
+          }
+          xhr.open("GET", URL, true);
+          xhr.send();
         }
 
         function setData(){
             const url = new URL(location.href
-                +'setdata'
+                +'getdata'
                 +'?TARGET_TEMP='+ document.getElementById('TARGET_TEMP').value
                 +'&TARGET_CO2='+ document.getElementById('TARGET_CO2').value
                 +'&SWITCH=' + document.getElementById('SWITCH').checked);
                 
             console.log('REQUEST:'+url);
-            fetchData(url);
+            getData(url);
         }
 
         function TempCount(updown) {
@@ -102,36 +118,23 @@
                     setData();
                 }
             } else {
-                if(value > 0) { 
+                if(value > 30) { 
                     value--;
                     document.getElementById("TARGET_CO2").value = value / 10; 
                     setData();
                 }
             }
         }
-        
-        // calculate co2 pressure
-        function calc_pressure() {
-            var temp = parseFloat(document.getElementById("TARGET_TEMP").value);
-            var co2 = parseFloat(document.getElementById("TARGET_CO2").value) / 10.0;
-            //var pressure = temp + co2;
-            var pressure = co2 / Math.pow(Math.E, -10.73797 + (2617.25 / (temp + 273.15)))- 1.013;
-            
-            document.getElementById("PRESSURE").innerHTML = pressure.toFixed(1);
-        }
-
-    </script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+     </script>
 </head>
 
 <body onload="refreshData()">
     <div class="topnav">
         <a href="/"><i class="fa-solid fa-house-chimney" style="font-size:36px"></i></a>
         <a href="/calc"><i class="fa-solid fa-calculator" style="font-size:36px"></i></a>
-        <a href="%EXTERNAL_URL%" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
+        <a href="#" id="EXT_URL" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
         <a href="/config"><i class="fa-solid fa-gear" style="font-size:36px;"></i></a>
         <a href="/check"><i class="fa-solid fa-list-check" style="font-size:36px"></i></a>
-        <a href="/update" target="_blank"><i class="fa-solid fa-upload" style="font-size:36px"></i></a>
     </div>
       
     <div class="row">
@@ -172,27 +175,39 @@
             </tr>
             <tr>
                 <td class="right">Power Consumption:</td>
-                <td><b id="POWER_CONSUMPTION">%POWER_CONSUMPTION%</b><b> Watt</b></td>
+                <td><b id="POWER_CONSUMPTION">0</b><b> Watt</b></td>
+            </tr>
+            <tr>
+                <td class="right">Bubbles per Minute:</td>
+                <td><b id="BUBBLES_PER_MINUTE">0</b></td>
             </tr>
             <tr>
                 <td class="right">Room Temp:</td>
-                <td><b id="ROOM_TEMP">%ROOM_TEMP%</b><b> &deg;C</b></td>
+                <td><b id="ROOM_TEMP">0</b><b> &deg;C</b></td>
+            </tr>
+            <tr>
+                <td class="right">Room Humidity:</td>
+                <td><b id="ROOM_HUMIDITY">0</b><b> %</b></td>
+            </tr>
+            <tr>
+                <td class="right">Air Pressure:</td>
+                <td><b id="ROOM_PRESSURE">0</b><b> hPa</b></td>
             </tr>
             <tr>
                 <td class="right">Compressor Temp:</td>
-                <td><b id="COMP_TEMP" class="COMP_TEMP_COLOR">%COMP_TEMP%</b><b class="COMP_TEMP_COLOR"> &deg;C</b></td>
+                <td><b id="COMP_TEMP" class="COMP_TEMP_COLOR">0</b><b class="COMP_TEMP_COLOR"> &deg;C</b></td>
             </tr>
             <tr>
                 <td class="right">Beer Temp:</td>
-                <td><b id="BEER_TEMP">%BEER_TEMP%</b><b> &deg;C</b></td>
+                <td><b id="BEER_TEMP">0</b><b> &deg;C</b></td>
             </tr>
             <tr class="row_center">
                 <td class="right">Current Temp:</td>
-                <td><b id="FRIDGE_TEMP" class="FRIDGE_TEMP_COLOR">%FRIDGE_TEMP%</b><b class="FRIDGE_TEMP_COLOR"> &deg;C  </b><b class="FRIDGE_TEMP_COLOR" id="COOL_HEAT_STATUS"></b></td>
+                <td><b id="FRIDGE_TEMP" class="FRIDGE_TEMP_COLOR">0</b><b class="FRIDGE_TEMP_COLOR"> &deg;C  </b><b class="FRIDGE_TEMP_COLOR" id="COOL_HEAT_STATUS"></b></td>
             </tr>
             </table>
         </center><br>
     </div>
-    <div class="footer">&copy; by Sandholz Engineering (Version: %VERSION%)</div>
+    <div class="footer">&copy; by Sandholz Engineering (Version: <span id="VERSION"></span>)</div>
 </body>
 </html>

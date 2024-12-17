@@ -1,99 +1,162 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>%HOSTNAME%</title>
+    <title>Fermentation-Control-System</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/style.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+      function refreshData(){
+          getData('/getconfig');
+          //setInterval(function(){getData('/getdata');}, 5000); // Daten alle 5 Sekunde abrufen  
+      }
+      
+      // Request data
+      function getData(URL) {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+              // Parse the JSON data from the response
+              var data = JSON.parse(xhr.responseText);
+              console.log(data); // Handle the JSON data
+
+              document.title = data["HOSTNAME"];
+              document.getElementById("VERSION").innerHTML = data["VERSION"];
+              document.getElementById("HOSTNAME").value = data["HOSTNAME"];
+              document.getElementById("WIFI_SSID").value = data["WIFI_SSID"];
+              document.getElementById("WIFI_PW").value = data["WIFI_PW"];
+              document.getElementById("MQTT_BROKER").value = data["MQTT_BROKER"];
+              document.getElementById("EXTERNAL_URL").value = data["EXTERNAL_URL"];
+              document.getElementById("EXT_URL").href = data["EXTERNAL_URL"];
+              
+              document.getElementById("WHATSAPP_NOTIFICATION").value = data["WHATSAPP_NOTIFICATION"];
+              
+              document.getElementById("TEMP_HYSTERESIS").value = data["TEMP_HYSTERESIS"];
+              document.getElementById("TARGET_TEMP").value = data["TARGET_TEMP"];
+              document.getElementById("TARGET_CO2").value = data["TARGET_CO2"];
+              document.getElementById("COMP_RUNNING_TIME").value = data["COMP_RUNNING_TIME"];
+              document.getElementById("COMP_TEMP_THRESHOLD").value = data["COMP_TEMP_THRESHOLD"];
+              
+              document.getElementById("POWER_HEAT").value = data["POWER_HEAT"];
+              document.getElementById("POWER_COOL").value = data["POWER_COOL"];
+              document.getElementById("POWER_IDLE").value = data["POWER_IDLE"];
+          } else {
+              // Handle any errors that occur
+              console.error("Request failed with status: " + xhr.status);
+          }
+        }
+        xhr.open("GET", URL, true);
+        xhr.send();
+      }
+      
+      // Buildung URL with parameters
+      function setData() {
+          const url = new URL('http://'+ location.host
+                +'/getconfig'
+                +'?HOSTNAME='+ document.getElementById('HOSTNAME').value
+                //+'&WIFI_SSID='+ document.getElementById('WIFI_SSID').value
+                //+'&WIFI_PW=' + document.getElementById('WIFI_PW').value
+                +'&MQTT_BROKER='+ document.getElementById('MQTT_BROKER').value
+                +'&EXTERNAL_URL=' + document.getElementById('EXTERNAL_URL').value
+                +'&WHATSAPP_NOTIFICATION='+ document.getElementById('WHATSAPP_NOTIFICATION').value
+                +'&TEMP_HYSTERESIS=' + document.getElementById('TEMP_HYSTERESIS').value
+                +'&TARGET_TEMP='+ document.getElementById('TARGET_TEMP').value
+                +'&TARGET_CO2=' + document.getElementById('TARGET_CO2').value
+                +'&COMP_RUNNING_TIME='+ document.getElementById('COMP_RUNNING_TIME').value
+                +'&COMP_TEMP_THRESHOLD=' + document.getElementById('COMP_TEMP_THRESHOLD').value
+                +'&POWER_HEAT=' + document.getElementById('POWER_HEAT').value
+                +'&POWER_COOL='+ document.getElementById('POWER_COOL').value
+                +'&POWER_IDLE=' + document.getElementById('POWER_IDLE').value);
+
+        console.log('REQUEST:'+url);
+        getData(url);
+    }
+  </script>
 </head>
 
-<body>
+<body onload="refreshData()">
     <div class="topnav">
         <a href="/"><i class="fa-solid fa-house-chimney" style="font-size:36px"></i></a>
         <a href="/calc"><i class="fa-solid fa-calculator" style="font-size:36px"></i></a>
-        <a href="%EXTERNAL_URL%" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
+        <a href="#" id="EXT_URL" target="_blank"><i class="fa-solid fa-chart-line" style="font-size:36px"></i></a>
         <a href="/config"><i class="fa-solid fa-gear" style="font-size:36px;"></i></a>
         <a href="/check"><i class="fa-solid fa-list-check" style="font-size:36px"></i></a>
-        <a href="/update" target="_blank"><i class="fa-solid fa-upload" style="font-size:36px"></i></a>
     </div>
     
     <div class="row">
       <h2>Configuration Center</h2>
         <center>
           <table class="center">
-           <form action="/save-config">
            <tr>
             <td class="right">Hostname:</td>
-            <td><input type="text" name="HOSTNAME" value="%HOSTNAME%"></td>
+            <td><input id="HOSTNAME" type="text" name="HOSTNAME" value="" onchange="setData()"></td>
            </tr>
            <tr>
             <td class="right">WiFi-SSID:</td>
-            <td><input type="text" name="WLAN_SSID" value="%WIFI_SSID%" readonly></td>
+            <td><input id="WIFI_SSID" type="text" name="WIFI_SSID" value="" readonly></td>
            </tr>
            <tr>
             <td class="right">WiFi-PW:</td>
-            <td><input type="password" name="WLAN_PW" value="%WIFI_PW%" readonly></td>
+            <td><input id="WIFI_PW" type="password" name="WIFI_PW" value="" readonly></td>
            </tr>
            <tr>
             <td class="right">MQTT-Boker:</td>
-            <td><input type="text" name="MQTT_BROKER" value="%MQTT_BROKER%"></td>
+            <td><input id="MQTT_BROKER" type="text" name="MQTT_BROKER" value="" onchange="setData()"></td>
            </tr>
            <tr>
             <td class="right">External URL:</td>
-            <td><input type="text" name="EXTERNAL_URL" value="%EXTERNAL_URL%"></td>
+            <td><input ID="EXTERNAL_URL" type="text" name="EXTERNAL_URL" value="" onchange="setData()"></td>
            </tr>
            <tr>
            <td class="right">WhatsApp Notification:</td>
            <td>
-              <select name="WHATSAPP_NOTIFICATION">
-                <option value="true"%WHATSAPP_TRUE%>true</option>
-                <option value="false"%WHATSAPP_FALSE%>false</option>
+              <select id="WHATSAPP_NOTIFICATION" name="WHATSAPP_NOTIFICATION" onchange="setData()">
+                <option value="true">true</option>
+                <option value="false">false</option>
               </select>
            </tr>
            <tr>
             <td class="right">Hysteresis [&deg;C]:</td>
-            <td><input type="number" name="TEMP_HYSTERESIS" value="%TEMP_HYSTERESIS%"></td>
+            <td><input id="TEMP_HYSTERESIS" type="number" name="TEMP_HYSTERESIS" value="" onchange="setData()"></td>
            </tr>
            <tr>
             <td class="right">Target-Temp [&deg;C]:</td>
-            <td><input type="number" name="TARGET_TEMP" value="%TARGET_TEMP%"></td>
+            <td><input id="TARGET_TEMP" type="number" name="TARGET_TEMP" min="1" max="25" alue="" onchange="setData()"></td>
            </tr>
            <tr>
             <td class="right">Target-CO2 [g/Liter]:</td>
-            <td><input type="number" name="TARGET_CO2" value="%TARGET_CO2%"></td>
+            <td><input id="TARGET_CO2" type="number" name="TARGET_CO2" min="3" max="7" step=".1" value="" onchange="setData()"></td>
            </tr>
            <tr>
             <td class="right">Compressor Running Time [sec]:</td>
-            <td><input type="number" name="COMP_RUNNING_TIME" value="%COMP_RUNNING_TIME%"></td>
+            <td><input id="COMP_RUNNING_TIME" type="number" name="COMP_RUNNING_TIME" value="" min="45" max="120" onchange="setData()"></td>
           </tr>
           <tr>
             <td class="right">Compressor Threshold [&deg;C]:</td>
-            <td><input type="number" name="COMP_TEMP_THRESHOLD" value="%COMP_TEMP_THRESHOLD%"></td>
+            <td><input id="COMP_TEMP_THRESHOLD" type="number" name="COMP_TEMP_THRESHOLD" min="40" max="60" value="" onchange="setData()"></td>
           </tr>
            <tr>
             <td class="right">Power Heating [W]:</td>
-            <td><input type="number" name="POWER_HEAT" value="%POWER_HEAT%"></td>
+            <td><input id="POWER_HEAT" type="number" name="POWER_HEAT" min="0" max="100" value="" onchange="setData()"></td>
            </tr>
            <tr>
             <td class="right">Power Cooling [W]:</td>
-            <td><input type="number" name="POWER_COOL" value="%POWER_COOL%"></td>
+            <td><input id="POWER_COOL" type="number" name="POWER_COOL" min="0" max="100" value="" onchange="setData()"></td>
            </tr>
            <tr>
             <td class="right">Power Idle [W]:</td>
-            <td><input type="number" name="POWER_IDLE" value="%POWER_IDLE%"></td>
+            <td><input id="POWER_IDLE" type="number" name="POWER_IDLE" min="0" max="100" value="" onchange="setData()"></td>
            </tr>
            <tr>
             <td></td>
-              <td><b><input class="success" type="submit" value="Submit"></b></td>
+              <td><button class="success" onclick="setData()"><b>Save</b></button></td>
            </tr>
-          </form>
         </table>
         </center>
     <br>
     </div>
-     
-    <div class="footer">&copy; by Sandholz Engineering (Version: %VERSION%)</div>
+    <div class="footer">&copy; by Sandholz Engineering (Version: <span id="VERSION"></span>)</div> 
     </body>
 </html>
