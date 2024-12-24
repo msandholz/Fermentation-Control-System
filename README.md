@@ -14,12 +14,38 @@
 
 ## ToDo: Next Release (2.0):
 
+## Release (2.0.1)
+- Improvement regarding electromagnetic interference while switching compressor on/off 
+```c
 
+130	portMUX_TYPE lock = portMUX_INITIALIZER_UNLOCKED;       // Mutex for disabling interface handling
 
+755	void switchCompressor(TimerHandle_t xTimer) {
+756
+757	    taskENTER_CRITICAL(&lock); // disable all interrupts
+758    
+759	    if(SHOW_COOL_DOWN) {
+760	        digitalWrite(COOL_DOWN, ON);
+761	        delay(150);
+762	    } else {
+763	        digitalWrite(COOL_DOWN, OFF);
+764	        delay(500);
+765	    }
+766	    taskEXIT_CRITICAL(&lock); // enable all interrupts
+767
+768	    refresh_EPD();
+769
+770	    debugf("SWITCH Compressor: %d\n", SHOW_COOL_DOWN);
+771	}
+```
 
-## Release (1.9.9)
-- Completely re-worked with touch sensors, bubble counter, beer temp sensor and 2.9 inch ePaper display.
+- Refresh switch-state in index.html
+```html
+36  document.getElementById("SWITCH").checked = data.SWITCH;
+```
 
+## Release (2.0)
+- Completely re-worked with touch sensors, bubble counter, beer temp sensor, WhatsApp notification and 2.9 inch ePaper display.
 
 ## Release (1.6 - 1.9):
 - Bugfixing
