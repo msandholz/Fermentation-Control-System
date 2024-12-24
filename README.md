@@ -39,7 +39,7 @@
 771	}
 ```
 
-- Bugfixing regarding refreshing switch-state [index.html]
+- Bugfix regarding refreshing switch-state [index.html]
 ```js
 36	document.getElementById("SWITCH").checked = data.SWITCH;
 ```
