@@ -30,8 +30,11 @@
 
                 document.title = data.HOSTNAME;
                 document.getElementById("VERSION").innerHTML = data.VERSION;
-                document.getElementById("EXT_URL").href = data.EXTERNAL_URL;
-   
+                document.getElementById("EXT_URL").href = data.EXTERNAL_URL; 
+
+                // Checkbox
+                document.getElementById("SWITCH").checked = data.SWITCH;
+
                 document.getElementById("TARGET_TEMP").value = data.TARGET_TEMP;             
                 document.getElementById("TARGET_CO2").value = data.TARGET_CO2;
                 document.getElementById("POWER_CONSUMPTION").innerHTML = data.POWER_CONSUMPTION;

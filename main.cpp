@@ -28,9 +28,9 @@
 #include <EPD_Cool.h>
 #include <EPD_Heat.h>
 
-#define VERSION "1.9.9"
+#define VERSION "2.0.1"
 
-#define DEBUG_SERIAL false                               // Enable debbuging over serial interface
+#define DEBUG_SERIAL true                               // Enable debbuging over serial interface
 #if DEBUG_SERIAL
 #define debug(x) Serial.print(x)
 #define debugf(x, ...) Serial.printf((x), ##__VA_ARGS__)
@@ -47,10 +47,10 @@
 /* 
   PIN   |   Mode        |   Funtion             ||  PIN |   Mode        |   Function
   ------+---------------+-----------------------++------+---------------+-----------------------
-  13    |   output      |   Cool down           ||  G   |   GND         |   Ground
+  13    |   -           |   -                   ||  G   |   GND         |   Ground
   15    |   output      |   Heat up             ||  12  |   -           |      
-  2     |   -           |                       ||  14  |   Input       |   Button Temp minus 
-  0     |   I2C SDA     |   BME 280 Data        ||  27  |   Input       |   Button Temp plus
+  2     |   output      |   Cool down           ||  14  |   Input       |   Button Temp plus
+  0     |   I2C SDA     |   BME 280 Data        ||  27  |   Input       |   Button Temp minus 
   4     |   SPI BUSY    |   EPD_BUSY            ||  26  |   I2C CLK     |   BME 280 Clock
   16    |   SPI RST     |   EPD RST             ||  25  |   I2C SDA     |   BME 280 Data 
   17    |   SPI DC      |   EPD DC              ||  33  |   -           |   
@@ -62,12 +62,12 @@
   3V    |   VCC         |   Power               ||  VP  |   -           |
 */
 
-#define COOL_DOWN 13                                    // GPIO for cooling down Relais
+#define COOL_DOWN 2                                     // GPIO for cooling down Relais
 #define HEAT_UP 15                                      // GPIO for heating up Relais
 
 #define BUBBLE_COUNT 34                                 // GPIO for Bubble Counter
-#define BTN_TEMP_MINUS 14                               // GPIO for TEMP -1
-#define BTN_TEMP_PLUS 27                                // GPIO for TEMP +1
+#define BTN_TEMP_MINUS 27                               // GPIO for TEMP -1
+#define BTN_TEMP_PLUS 14                                // GPIO for TEMP +1
 #define BTN_PRESS_TIME 150                              // Milliseconds Button pressed
 
 #define SDA_PIN 25                                      // GPIO for I2C SDA
@@ -127,6 +127,7 @@ boolean SHOW_HEAT_UP = false;                           // Flag for heating
 static TimerHandle_t Temp_timer = NULL;                 // Handle to get temperatures
 static TimerHandle_t Display_timer = NULL;              // Timer for refreshing the EPD display
 boolean SWITCH = true;           	                    // Enable Fermentation Control
+portMUX_TYPE lock = portMUX_INITIALIZER_UNLOCKED;       // Mutex for disabling interface handling
 Adafruit_BME280 bme280;                                 // I2C
 
 // Section for OneWire sensors 
@@ -160,7 +161,7 @@ int POWER_IDLE = 7;                                     // Power consumption idl
 // Section to set MQTT related operation
 String MQTT_BROKER = "192.168.178.12";                  // MQTT-Broker
 const int mqtt_port = 1883;                             // MQTT Port
-char mqtt_json_msg[128];                                // MQTT Message
+char mqtt_json_msg[256];                                // MQTT Message
 static TimerHandle_t MQTT_timer = NULL;                 // Handle to send MQTT Messages
 
 
@@ -201,10 +202,10 @@ void IRAM_ATTR bubbleCountISR() {
 void IRAM_ATTR btnTempMinusISR() {
     portENTER_CRITICAL_ISR(&synch);
     if ((millis() - lastButtonPressMS) > BTN_PRESS_TIME) {
-        lastButtonPressMS = millis();
         TARGET_TEMP--;
         BUTTON_PRESSED = true;
         if(TARGET_TEMP < 0) { TARGET_TEMP = 0; }
+        lastButtonPressMS = millis();
     }
     portEXIT_CRITICAL_ISR(&synch);
 }
@@ -213,10 +214,10 @@ void IRAM_ATTR btnTempMinusISR() {
 void IRAM_ATTR btnTempPlusISR() {
     portENTER_CRITICAL_ISR(&synch);
     if ((millis() - lastButtonPressMS) > BTN_PRESS_TIME) {
-        lastButtonPressMS = millis();
         TARGET_TEMP++;
         BUTTON_PRESSED = true;
         if(TARGET_TEMP > 25) { TARGET_TEMP = 25; }
+        lastButtonPressMS = millis();
     }
     portEXIT_CRITICAL_ISR(&synch);
 }
@@ -753,12 +754,19 @@ void calcBubbles(TimerHandle_t xTimer){
 // function to switch compressor on/off with timer handle
 void switchCompressor(TimerHandle_t xTimer) {
 
+    taskENTER_CRITICAL(&lock); // disable all interrupts
+    
     if(SHOW_COOL_DOWN) {
         digitalWrite(COOL_DOWN, ON);
+        delay(150);
     } else {
         digitalWrite(COOL_DOWN, OFF);
+        delay(500);
     }
+    taskEXIT_CRITICAL(&lock); // enable all interrupts
+
     refresh_EPD();
+
     debugf("SWITCH Compressor: %d\n", SHOW_COOL_DOWN);
 }
 
@@ -859,7 +867,7 @@ void publishMessage(TimerHandle_t xTimer) {
         doc["comp_temp"] = COMP_TEMP_F;
         doc["fridge_temp"] = FRIDGE_TEMP_F;
         doc["beer_temp"] = BEER_TEMP_F;
-        doc["bubble_per_minut"] = BUBBLES_PER_MINUTE;
+        doc["bubble_per_minute"] = BUBBLES_PER_MINUTE;
 
         int COOL_HEAT = 10;
         if(SHOW_COOL_DOWN) { COOL_HEAT = 0; }
@@ -869,11 +877,13 @@ void publishMessage(TimerHandle_t xTimer) {
         int msg_size = serializeJson(doc, mqtt_json_msg);
 
         mqttClient.publish("test", mqtt_json_msg, msg_size);
-     
-        //display.print("*");
-    } 
-    //display.display();
-    debugln("TIMER for MQTT-> Message sent!");
+
+        debugf("TIMER for MQTT-> Message sent:%s\n", mqtt_json_msg);
+
+    } else {
+        debugln("TIMER for MQTT-> Sending Message failed!");
+    }
+   
 }
 
 // function to initialize the MQTT client
@@ -1350,14 +1360,14 @@ void refresh_EPD(){
     if ((millis() - last_EPD_refresh_time) > EPD_IDLE_TIME) {
         last_EPD_refresh_time = millis();
 
-        ePaper.setPartialWindow(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        ePaper.setPartialWindow(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);   
         ePaper.fillScreen(GxEPD_WHITE);
 
         show_EPD_UpperPart();
         show_EPD_Graph();
         show_EPD_Status();
 
-        ePaper.display(true);
+        ePaper.display(true); // Inhalt anzeigen und Puffer leeren
     }
 }
 
