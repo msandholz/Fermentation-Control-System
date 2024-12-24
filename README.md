@@ -41,7 +41,7 @@
 
 - Refresh switch-state in index.html
 ```html
-36  document.getElementById("SWITCH").checked = data.SWITCH;
+36	document.getElementById("SWITCH").checked = data.SWITCH;
 ```
 
 ## Release (2.0)
