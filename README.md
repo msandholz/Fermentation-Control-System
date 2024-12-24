@@ -40,7 +40,7 @@
 ```
 
 - Refresh switch-state in index.html
-```html
+```js
 36	document.getElementById("SWITCH").checked = data.SWITCH;
 ```
 
