@@ -15,7 +15,7 @@
 ## ToDo: Next Release (2.0):
 
 ## Release (2.0.1)
-- Improvement regarding electromagnetic interference while switching compressor on/off 
+- Improvement regarding electromagnetic interference while switching compressor on/off [main.ccp]
 ```c
 
 130	portMUX_TYPE lock = portMUX_INITIALIZER_UNLOCKED;       // Mutex for disabling interface handling
@@ -39,7 +39,7 @@
 771	}
 ```
 
-- Refresh switch-state in index.html
+- Refresh switch-state [index.html]
 ```js
 36	document.getElementById("SWITCH").checked = data.SWITCH;
 ```
