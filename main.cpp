@@ -121,7 +121,7 @@ float ROOM_HUMIDITY_F = -111;
 float ROOM_PRESSURE_F = -111;
 int TARGET_TEMP = 10;                                   // Setting default target temp
 int TEMP_HYSTERESIS = 1;                                // Parameter for temp hystersis
-int CHART_VALUES [200];                                 // Array for chart
+int CHART_VALUES [201];                                 // Array for chart
 boolean SHOW_COOL_DOWN = false;                         // Flag for cooling
 boolean SHOW_HEAT_UP = false;                           // Flag for heating
 static TimerHandle_t Temp_timer = NULL;                 // Handle to get temperatures
@@ -320,11 +320,11 @@ void setup() {
 
     // GPIO for TEMP -1
     pinMode(BTN_TEMP_MINUS, INPUT_PULLUP);         
-    attachInterrupt(BTN_TEMP_MINUS, btnTempMinusISR, FALLING);
+    //attachInterrupt(BTN_TEMP_MINUS, btnTempMinusISR, FALLING);
     
     // GPIO for TEMP +1
     pinMode(BTN_TEMP_PLUS, INPUT_PULLUP);         
-    attachInterrupt(BTN_TEMP_PLUS, btnTempPlusISR, FALLING);
+    //attachInterrupt(BTN_TEMP_PLUS, btnTempPlusISR, FALLING);
 
     // GPIO for Bubble Counter
     pinMode(BUBBLE_COUNT, INPUT_PULLUP);         
@@ -492,12 +492,12 @@ void initESP(boolean filesystem) {
 // function for loading configuration from file system
 void loadConfig(){
  
-  File config = LittleFS.open("/config.json","r");
+  File configFile = LittleFS.open("/config.json","r");
 
-  if(config) { 
+  if(configFile) { 
     // Deserialize the JSON document
     JsonDocument doc;
-    DeserializationError error = deserializeJson(doc, config);
+    DeserializationError error = deserializeJson(doc, configFile);
 
     if (error) { 
       debugf("-! DeserializeJson failed! -> %s/n", error.f_str());
@@ -524,16 +524,17 @@ void loadConfig(){
 
     debugf("-Config loaded [WHATSAPP_NOTIFICATION=%i]\n", WHATSAPP_NOTIFICATION);    
     }
-  config.close();
+  configFile.close();
 }
 
 // function to persist save config parameters on file system
 void saveConfig() {
 
-    File config = LittleFS.open("/config.json","w");
-    if(config) { 
+    File configFile = LittleFS.open("/config.json","w");
+    if(configFile) { 
         // Serialize the JSON document
         JsonDocument doc;
+        String configString;
         doc["HOSTNAME"] = HOSTNAME;
         doc["MQTT_BROKER"] = MQTT_BROKER;
         doc["EXTERNAL_URL"] = EXTERNAL_URL;
@@ -546,9 +547,10 @@ void saveConfig() {
         doc["POWER_HEAT"] = POWER_HEAT;
         doc["POWER_COOL"] = POWER_COOL;
         doc["POWER_IDLE"] = POWER_IDLE;                
-        serializeJsonPretty(doc, config);
+        serializeJsonPretty(doc, configString);
+        configFile.print(configString);
     }   
-    config.close();
+    configFile.close();
 }
 
 // function to print a device address
@@ -761,7 +763,7 @@ void switchCompressor(TimerHandle_t xTimer) {
         delay(150);
     } else {
         digitalWrite(COOL_DOWN, OFF);
-        delay(500);
+        delay(750);
     }
     taskEXIT_CRITICAL(&lock); // enable all interrupts
 
