@@ -14,6 +14,32 @@
 
 ## ToDo: Next Release (2.0):
 
+
+## Release (2.1.0)
+- Adding a function to switch on/off the fridge by pressing both buttons simultaneously [main.ccp]
+```c
+72	#define BTN_BOTH_PRESS_TIME 5000                        // Milliseconds both Buttons pressed
+
+174 	boolean BUTTONS_BOTH_PRESSED = false;                   // Flag, if both buttons pressed simultaneously
+175	volatile long lastBtnPressedBoth = 0;                   // Starting time for pressing both buttons simultaneously
+
+424	// check, if both buttons presses simultaneously
+425    if(digitalRead(BTN_TEMP_MINUS) == HIGH && digitalRead(BTN_TEMP_PLUS) == HIGH) {
+426        if(!BUTTONS_BOTH_PRESSED) {
+427            BUTTONS_BOTH_PRESSED = true;
+428            lastBtnPressedBoth = millis();
+429        }
+430
+431        if(millis() - lastBtnPressedBoth > BTN_BOTH_PRESS_TIME) {
+432            SWITCH=!SWITCH;
+433            refresh_EPD();
+434            lastBtnPressedBoth = millis();
+435        }        
+436    } else {
+437        BUTTONS_BOTH_PRESSED = false;        
+438    }
+```
+
 ## Release (2.0.1)
 - Improvement regarding electromagnetic interference while switching compressor on/off [main.ccp]
 ```c
