@@ -28,7 +28,7 @@
 #include <EPD_Cool.h>
 #include <EPD_Heat.h>
 
-#define VERSION "2.0.1"
+#define VERSION "2.1.0"
 
 #define DEBUG_SERIAL true                               // Enable debbuging over serial interface
 #if DEBUG_SERIAL
@@ -68,7 +68,8 @@
 #define BUBBLE_COUNT 34                                 // GPIO for Bubble Counter
 #define BTN_TEMP_MINUS 27                               // GPIO for TEMP -1
 #define BTN_TEMP_PLUS 14                                // GPIO for TEMP +1
-#define BTN_PRESS_TIME 150                              // Milliseconds Button pressed
+#define BTN_PRESS_TIME 250                              // Milliseconds Button pressed
+#define BTN_BOTH_PRESS_TIME 5000                        // Milliseconds both Buttons pressed
 
 #define SDA_PIN 25                                      // GPIO for I2C SDA
 #define SCL_PIN 26                                      // GPIO for I2C SCL
@@ -167,8 +168,11 @@ static TimerHandle_t MQTT_timer = NULL;                 // Handle to send MQTT M
 
 // Section for Button and Bubble Counter 
 portMUX_TYPE synch = portMUX_INITIALIZER_UNLOCKED;
-boolean BUTTON_PRESSED = false;                         // Flag, if Button was pressed
-volatile long lastButtonPressMS = 0;                    
+boolean BUTTON_PRESSED = false;                         // Flag, if one button pressed
+volatile long lastBtnPressPlus = 0;                     // Starting time for pressing button plus  
+volatile long lastBtnPressMinus = 0;                    // Starting time for pressing button minus  
+boolean BUTTONS_BOTH_PRESSED = false;                   // Flag, if both buttons pressed simultaneously
+volatile long lastBtnPressedBoth = 0;                   // Starting time for pressing both buttons simultaneously                    
 int bubbleCount = 0;                                    // Bubble Counter
 int BUBBLES_PER_MINUTE = 0;                             // Bubbles per Minute
 static TimerHandle_t BubbleCount_timer = NULL;          // Timer for Bubble Counter
@@ -201,11 +205,16 @@ void IRAM_ATTR bubbleCountISR() {
 // Interrupt service routine for button "Temp minus"
 void IRAM_ATTR btnTempMinusISR() {
     portENTER_CRITICAL_ISR(&synch);
-    if ((millis() - lastButtonPressMS) > BTN_PRESS_TIME) {
-        TARGET_TEMP--;
-        BUTTON_PRESSED = true;
-        if(TARGET_TEMP < 0) { TARGET_TEMP = 0; }
-        lastButtonPressMS = millis();
+    int currentState = gpio_get_level((gpio_num_t)BTN_TEMP_MINUS);
+
+    if(currentState == 1) {
+        lastBtnPressMinus = millis();
+    } else {
+        if (((millis() - lastBtnPressMinus) > BTN_PRESS_TIME) && !BUTTONS_BOTH_PRESSED) {
+            TARGET_TEMP--;
+            BUTTON_PRESSED = true;
+            if(TARGET_TEMP < 0) { TARGET_TEMP = 0; }
+        }
     }
     portEXIT_CRITICAL_ISR(&synch);
 }
@@ -213,11 +222,17 @@ void IRAM_ATTR btnTempMinusISR() {
 // Interrupt service routine for button "Temp plus"
 void IRAM_ATTR btnTempPlusISR() {
     portENTER_CRITICAL_ISR(&synch);
-    if ((millis() - lastButtonPressMS) > BTN_PRESS_TIME) {
-        TARGET_TEMP++;
-        BUTTON_PRESSED = true;
-        if(TARGET_TEMP > 25) { TARGET_TEMP = 25; }
-        lastButtonPressMS = millis();
+
+    int currentState = gpio_get_level((gpio_num_t)BTN_TEMP_PLUS);
+
+    if(currentState == 1) {
+        lastBtnPressPlus = millis();
+    } else {
+        if (((millis() - lastBtnPressPlus) > BTN_PRESS_TIME) && !BUTTONS_BOTH_PRESSED) {
+            TARGET_TEMP++;
+            BUTTON_PRESSED = true;
+            if(TARGET_TEMP > 25) { TARGET_TEMP = 25; }
+        }
     }
     portEXIT_CRITICAL_ISR(&synch);
 }
@@ -320,11 +335,11 @@ void setup() {
 
     // GPIO for TEMP -1
     pinMode(BTN_TEMP_MINUS, INPUT_PULLUP);         
-    //attachInterrupt(BTN_TEMP_MINUS, btnTempMinusISR, FALLING);
+    attachInterrupt(BTN_TEMP_MINUS, btnTempMinusISR, CHANGE);
     
     // GPIO for TEMP +1
-    pinMode(BTN_TEMP_PLUS, INPUT_PULLUP);         
-    //attachInterrupt(BTN_TEMP_PLUS, btnTempPlusISR, FALLING);
+    pinMode(BTN_TEMP_PLUS, INPUT_PULLUP);
+    attachInterrupt(BTN_TEMP_PLUS, btnTempPlusISR, CHANGE);         
 
     // GPIO for Bubble Counter
     pinMode(BUBBLE_COUNT, INPUT_PULLUP);         
@@ -406,6 +421,28 @@ void loop() {
 
     ArduinoOTA.handle(); 
     
+    // check, if both buttons presses simultaneously
+    if(digitalRead(BTN_TEMP_MINUS) == HIGH && digitalRead(BTN_TEMP_PLUS) == HIGH) {
+        if(!BUTTONS_BOTH_PRESSED) {
+            BUTTONS_BOTH_PRESSED = true;
+            lastBtnPressedBoth = millis();
+        }
+
+        if(millis() - lastBtnPressedBoth > BTN_BOTH_PRESS_TIME) {
+            SWITCH=!SWITCH;
+            refresh_EPD();
+            lastBtnPressedBoth = millis();
+        }        
+    } else {
+        BUTTONS_BOTH_PRESSED = false;        
+    }
+
+    // check, if on button was pressed and refresh display
+    if(BUTTON_PRESSED) {
+        refresh_EPD();
+        BUTTON_PRESSED = false;
+    }
+
     // Temp control of the fridge
     if (SWITCH) {
         if((int)round(COMP_TEMP_F) < COMP_TEMP_THRESHOLD) { 
@@ -440,11 +477,6 @@ void loop() {
         POWER_CONSUMPTION = POWER_HEAT;
     } else {
         POWER_CONSUMPTION = POWER_IDLE;
-    }
-
-    if(BUTTON_PRESSED) {
-        refresh_EPD();
-        BUTTON_PRESSED = false;
     }
   
 }
@@ -756,16 +788,16 @@ void calcBubbles(TimerHandle_t xTimer){
 // function to switch compressor on/off with timer handle
 void switchCompressor(TimerHandle_t xTimer) {
 
-    taskENTER_CRITICAL(&lock); // disable all interrupts
-    
+    //taskENTER_CRITICAL(&lock); 
+    taskDISABLE_INTERRUPTS(); // disable all interrupts
     if(SHOW_COOL_DOWN) {
         digitalWrite(COOL_DOWN, ON);
-        delay(150);
     } else {
         digitalWrite(COOL_DOWN, OFF);
-        delay(750);
     }
-    taskEXIT_CRITICAL(&lock); // enable all interrupts
+    delay(250);
+    taskENABLE_INTERRUPTS(); // enable all interrupts
+    //taskEXIT_CRITICAL(&lock); 
 
     refresh_EPD();
 
