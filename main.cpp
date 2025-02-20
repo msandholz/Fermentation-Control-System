@@ -28,7 +28,7 @@
 #include <EPD_Cool.h>
 #include <EPD_Heat.h>
 
-#define VERSION "2.1.0"
+#define VERSION "2.1.1"
 
 #define DEBUG_SERIAL true                               // Enable debbuging over serial interface
 #if DEBUG_SERIAL
@@ -452,7 +452,7 @@ void loop() {
 
             if (FRIDGE_TEMP_F <= TARGET_TEMP - TEMP_HYSTERESIS) { SHOW_COOL_DOWN = false; } 
 
-            if ((ROOM_TEMP_F <= TARGET_TEMP) && (FRIDGE_TEMP_F < TARGET_TEMP - TEMP_HYSTERESIS)) {                    
+            if ((ROOM_TEMP_F <= TARGET_TEMP) && (FRIDGE_TEMP_F < TARGET_TEMP + TEMP_HYSTERESIS)) {                    
                 digitalWrite(HEAT_UP, ON);
                 SHOW_HEAT_UP = true;
             } else {
@@ -482,7 +482,7 @@ void loop() {
 }
 
 // ======================================================================
-// Functions
+// Functions definition
 // ======================================================================
 
 // initialize ESP + gather system parameters
@@ -795,7 +795,10 @@ void switchCompressor(TimerHandle_t xTimer) {
     } else {
         digitalWrite(COOL_DOWN, OFF);
     }
-    delay(250);
+
+    //delay(150);
+    lastBtnPressPlus = millis();
+    lastBtnPressMinus = millis();
     taskENABLE_INTERRUPTS(); // enable all interrupts
     //taskEXIT_CRITICAL(&lock); 
 
